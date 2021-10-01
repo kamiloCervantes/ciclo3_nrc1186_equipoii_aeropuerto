@@ -2,12 +2,14 @@
 {% block title %}Index{% endblock %}
 {% block head %}
   {{ super() }}
-  <style type="text/css">
-    .important { color: #336699; }
-  </style>
 {% endblock %}
 {% block content %}
-  <h1>Index</h1>
-  <p class="important">
-    Welcome on my awesome homepage.
+<h5 class="card-title"><b>Title</b></h5>
+<h6 class="card-subtitle my-2 text-muted">Subtitle</h6>
+<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+<a href="#" class="card-link">Card link</a>
+<a href="#" class="card-link">Another link</a>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
 {% endblock %}
