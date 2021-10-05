@@ -31,12 +31,14 @@
       <div class="row">
         <div class="col-md-3" style="">
           <ul class="list-group list-group-flush">
+            {% block menu %}
             <li class="list-group-item active"><i class="fa mr-2 fa-suitcase text-secondary"></i>Vuelos</li>
             <li class="list-group-item"><i class="fa mr-2 fa-plane text-secondary"></i>&nbsp;Aeronaves</li>
             <li class="list-group-item"><i class="fa mr-2 fa-arrow-right text-secondary"></i>&nbsp;Rutas</li>
             <li class="list-group-item"><i class="fa mr-2 fa-map-marker text-secondary"></i>&nbsp;Destinos</li>
             <li class="list-group-item"><i class="fa mr-2 fa-users text-secondary"></i><span style="font-size: 1rem;">Usuarios</span></li>
             <li class="list-group-item"><i class="fa fa-paper-plane mr-2 text-secondary"></i><span style="font-size: 1rem;">Pilotos</span></li>
+            {% endblock %}
           </ul>
         </div>
         <div class="col-md-9" style="">

@@ -1,0 +1,32 @@
+{% extends "layout_auth.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+<h1 class="">Heading 1</h1>
+<form class="" method="POST" action="{{ url_for('login') }}" autocomplete="off" novalidate>
+  {{form.csrf_token }}
+  <div class="form-group">  
+    {{form.username}} 
+    <small class="form-text text-muted">We'll never share your email with anyone else.</small> 
+  </div>
+  <ul>
+    {%for error in form.username.errors %}
+        <li style="color:red"> {{error}} </li>
+    {%endfor %}
+    </ul>
+  <div class="form-group"> 
+    {{form.password}} 
+  </div> 
+  <ul>
+    {%for error in form.password.errors %}
+        <li style="color:red"> {{error}} </li>
+    {%endfor %}
+</ul>
+  <button type="submit" class="btn btn-lg btn-primary text-light">Submit</button>
+</form>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}
