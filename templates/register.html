@@ -1,0 +1,88 @@
+{% extends "layout_auth.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-4" style=""><img class="img-fluid d-block" src="{{ url_for('static', filename='logo.svg') }}"></div>
+  <div class="col-md-8" style="">
+    <h1 class="" >Regístrate para acceder al sistema</h1>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <form class="" method="POST" action="{{ url_for('register') }}" autocomplete="off" novalidate>
+      {{form.csrf_token }}
+      <div class="form-group">
+         {{form.nombrecompleto.label}} 
+         {{form.nombrecompleto}} 
+        </div>
+        <ul>
+    {%for error in form.nombrecompleto.errors %}
+        <li style="color:red"> {{error}} </li>
+    {%endfor %}
+    </ul>
+      <div class="form-group">
+        {{form.correoelectronico.label}}
+         {{form.correoelectronico}}
+      </div> 
+      <ul>
+    {%for error in form.correoelectronico.errors %}
+        <li style="color:red"> {{error}} </li>
+    {%endfor %}
+    </ul>
+      <div class="form-group">
+        {{form.tipodocumento.label}}
+        {{form.tipodocumento}}
+     </div> 
+     <ul>
+    {%for error in form.tipodocumento.errors %}
+        <li style="color:red"> {{error}} </li>
+    {%endfor %}
+    </ul>
+     <div class="form-group">
+      {{form.numdocumento.label}}
+      {{form.numdocumento}}
+     </div> 
+     <ul>
+    {%for error in form.numdocumento.errors %}
+        <li style="color:red"> {{error}} </li>
+    {%endfor %}
+    </ul>
+     <div class="form-group">
+      {{form.username.label}}
+      {{form.username}}
+     </div> 
+     <ul>
+    {%for error in form.username.errors %}
+        <li style="color:red"> {{error}} </li>
+    {%endfor %}
+    </ul>
+     <div class="form-group">
+      {{form.password.label}}
+      {{form.password}}
+     </div>
+     <ul>
+    {%for error in form.password.errors %}
+        <li style="color:red"> {{error}} </li>
+    {%endfor %}
+    </ul>
+     <div class="form-group">
+      {{form.password_repeat.label}}
+      {{form.password_repeat}}
+     </div>
+     <ul>
+    {%for error in form.password_repeat.errors %}
+        <li style="color:red"> {{error}} </li>
+    {%endfor %}
+    </ul>
+      <button type="submit" class="btn btn-lg btn-primary text-light">Registrarse</button>
+      <a href="{{ url_for('login') }}">Volver al inicio de sesión</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}

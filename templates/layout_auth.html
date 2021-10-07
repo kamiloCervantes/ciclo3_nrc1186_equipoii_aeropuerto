@@ -13,11 +13,8 @@
 
 <body>
   <div class="py-5 text-center">
-    <div class="container-fluid bg-secondary p-4 mt-5">
-      <div class="row">
-        <div class="col-md-4" style=""><img class="img-fluid d-block" src="{{ url_for('static', filename='logo.svg') }}"></div>
-        <div class="col-md-8" style="">{% block content %}{% endblock %}</div>
-      </div>
+    <div class="container-fluid bg-secondary p-4 mt-5">            
+        {% block content %}{% endblock %}
     </div>
     <div class="container">
       <div class="row" id="footer">
