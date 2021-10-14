@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block menu %}
+  {{ super() }}
+{% endblock %}
+{% block navbar_menu %}{% endblock %}
+{% block content %}
+<h5 class="card-title"><b>Añadir usuario</b></h5>
+<form class="" method="POST" action="{{ url_for('flights_add') }}" autocomplete="off" novalidate>
+  {{form.csrf_token }}
+  <div class="form-group">
+     {{form.nombrecompleto.label}} 
+     {{form.nombrecompleto}} 
+    </div>
+    <ul>
+{%for error in form.nombrecompleto.errors %}
+    <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.tipodocumento.label}} 
+  {{form.tipodocumento}} 
+ </div>
+ <ul>
+{%for error in form.tipodocumento.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.numdocumento.label}} 
+  {{form.numdocumento}} 
+ </div>
+ <ul>
+{%for error in form.numdocumento.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.correoelectronico.label}} 
+  {{form.correoelectronico}} 
+ </div>
+ <ul>
+{%for error in form.correoelectronico.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.username.label}} 
+  {{form.username}} 
+ </div>
+ <ul>
+{%for error in form.username.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.password.label}} 
+  {{form.password}} 
+ </div>
+ <ul>
+{%for error in form.password.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<button type="submit" class="btn btn-lg btn-primary text-light">Enviar</button>
+<button class="btn btn-lg btn-primary text-light">Cancelar</button>
+</form>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}

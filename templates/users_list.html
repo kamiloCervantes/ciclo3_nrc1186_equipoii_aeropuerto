@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block menu %}
+  {{ super() }}
+{% endblock %}
+{% block navbar_menu %}{% endblock %}
+{% block content %}
+<h5 class="card-title"><b>Usuarios</b></h5>
+<table class="table">
+  <tr>
+    <th>Nombre de usuario</th>
+    <th>Nombre completo</th>
+    <th>Email</th>
+  </tr>
+  {% for usuario in usuarios %}
+  <tr>
+    <td>{{ usuario.username }}</td>
+    <td>{{ usuario.name }}</td>
+    <td>{{ usuario.email }}</td>
+    <td>
+      <a href="{{ url_for('users_edit', username=usuario.username) }}"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a>
+      <a href="#"><i class="fa fa-pencil-trash-o mr-2 text-secondary"></i></a>
+    </td>
+  </tr>  
+  {% endfor %}
+</table>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}

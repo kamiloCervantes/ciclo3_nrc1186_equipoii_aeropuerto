@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block menu %}
+  {{ super() }}
+{% endblock %}
+{% block navbar_menu %}{% endblock %}
+{% block content %}
+<h5 class="card-title"><b>Añadir ruta</b></h5>
+<form class="" method="POST" action="{{ url_for('flights_add') }}" autocomplete="off" novalidate>
+  {{form.csrf_token }}
+  <div class="form-group">
+     {{form.codigoruta.label}} 
+     {{form.codigoruta}} 
+    </div>
+    <ul>
+{%for error in form.codigoruta.errors %}
+    <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.destino.label}} 
+  {{form.destino}} 
+ </div>
+ <ul>
+{%for error in form.destino.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.destinopadre.label}} 
+  {{form.destinopadre}} 
+ </div>
+ <ul>
+{%for error in form.destinopadre.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+
+<button type="submit" class="btn btn-lg btn-primary text-light">Enviar</button>
+<button class="btn btn-lg btn-primary text-light">Cancelar</button>
+</form>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}

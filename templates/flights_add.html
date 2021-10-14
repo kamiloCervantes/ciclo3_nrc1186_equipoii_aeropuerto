@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block menu %}
+  {{ super() }}
+{% endblock %}
+{% block navbar_menu %}{% endblock %}
+{% block content %}
+<h5 class="card-title"><b>Añadir vuelo</b></h5>
+<form class="" method="POST" action="{{ url_for('flights_add') }}" autocomplete="off" novalidate>
+  {{form.csrf_token }}
+  <div class="form-group">
+     {{form.codigovuelo.label}} 
+     {{form.codigovuelo}} 
+    </div>
+    <ul>
+{%for error in form.codigovuelo.errors %}
+    <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.aeronave.label}} 
+  {{form.aeronave}} 
+ </div>
+ <ul>
+{%for error in form.aeronave.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.piloto.label}} 
+  {{form.piloto}} 
+ </div>
+ <ul>
+{%for error in form.piloto.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.capacidad.label}} 
+  {{form.capacidad}} 
+ </div>
+ <ul>
+{%for error in form.capacidad.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.piloto.label}} 
+  {{form.piloto}} 
+ </div>
+ <ul>
+{%for error in form.piloto.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<button type="submit" class="btn btn-lg btn-primary text-light">Enviar</button>
+<button class="btn btn-lg btn-primary text-light">Cancelar</button>
+</form>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}

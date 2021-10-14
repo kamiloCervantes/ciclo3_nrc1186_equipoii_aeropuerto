@@ -1,5 +1,5 @@
 {% extends "layout_auth.html" %}
-{% block title %}Index{% endblock %}
+{% block title %}Iniciar sesión{% endblock %}
 {% block head %}
   {{ super() }}
 {% endblock %}
@@ -7,12 +7,12 @@
 <div class="row"> 
 <div class="col-md-4" style=""><img class="img-fluid d-block" src="{{ url_for('static', filename='logo.svg') }}"></div>
 <div class="col-md-8" style="">
-<h1 class="">Heading 1</h1>
+<h1 class="">Mi cuenta</h1>
 <form class="" method="POST" action="{{ url_for('login') }}" autocomplete="off" novalidate>
   {{form.csrf_token }}
-  <div class="form-group">  
+  <div class="form-group"> 
+    {{form.username.label}}  
     {{form.username}} 
-    <small class="form-text text-muted">We'll never share your email with anyone else.</small> 
   </div>
   <ul>
     {%for error in form.username.errors %}
@@ -20,6 +20,7 @@
     {%endfor %}
     </ul>
   <div class="form-group"> 
+    {{form.password.label}} 
     {{form.password}} 
   </div> 
   <ul>
