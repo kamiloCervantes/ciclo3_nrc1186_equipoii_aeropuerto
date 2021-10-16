@@ -52,6 +52,7 @@ def home():
     return redirect(url_for('login'))
 
 
+
 @app.route("/login", methods=['GET','POST'])
 def login():
     form = login_form()    
@@ -247,6 +248,11 @@ def pilots_add():
 @app.route("/logout")
 def logout():
     return redirect(url_for('login'))
+
+
+@app.route("/admin/routes")
+def routes_list():
+    return render_template("routes_list.html")
 
 
 if __name__ == '__main__':
