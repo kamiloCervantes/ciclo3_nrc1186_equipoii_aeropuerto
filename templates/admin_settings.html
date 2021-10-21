@@ -290,7 +290,109 @@
 
   </div>
   <div class="tab-pane fade" id="nav-permisos" role="tabpanel" aria-labelledby="nav-permisos-tab">3</div>
-  <div class="tab-pane fade" id="nav-paises" role="tabpanel" aria-labelledby="nav-paises-tab">3</div>
+  <div class="tab-pane fade" id="nav-paises" role="tabpanel" aria-labelledby="nav-paises-tab">
+
+    <br/>
+    <h2>Configuración de paises</h2>
+    <div class="nuevo-pais">
+      <h3>Nuevo pais</h3>
+      <form class="" method="POST" action="{{ url_for('admin_settings_paises_add') }}" autocomplete="off" novalidate>
+        {{paises_form.csrf_token }}
+        <div class="form-group">
+          {{paises_form.nombre_pais.label}} 
+          {{paises_form.nombre_pais}} 
+          </div>
+          <ul>
+      {%for error in paises_form.nombre_pais.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{paises_form.descripcion_pais.label}} 
+        {{paises_form.descripcion_pais}} 
+      </div>
+      <ul>
+      {%for error in paises_form.descripcion_pais.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+    
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light">Guardar</button>
+      </form>
+    </div>
+    <div class="editar-pais hide">
+      <h3>Editar pais</h3>
+      <form class="" method="" action="" autocomplete="off" novalidate>
+        {{paises_form_edit.csrf_token }}
+        <div class="form-group">
+          {{paises_form_edit.nombre_pais_edit.label}} 
+          {{paises_form_edit.nombre_pais_edit}} 
+          </div>
+          <ul>
+      {%for error in paises_form_edit.nombre_pais_edit.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{paises_form_edit.descripcion_pais_edit.label}} 
+        {{paises_form_edit.descripcion_pais_edit}} 
+      </div>
+      <ul>
+      {%for error in paises_form_edit.descripcion_pais_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light" id="btn-edit-pais">Guardar</button>
+      <a href="#" class="btn btn-lg btn-primary text-light" id="btn-cancelar-edit-pais">Cancelar</a>
+
+      </form>
+    </div>
+    <br/>
+    <h3>Listado de paises</h3>
+    <div class="buscar-pais">
+      <form id="paises_search_form">
+        <div class="form-group">
+            <label for="query_pais">Buscar: </label> 
+            <input id="query_pais" name="query_pais" type="text" value=""> 
+            <button type="submit" class="btn btn-primary btn-sm text-light">Enviar</button>
+        </div>
+      </form>
+    </div>
+    <table class="table" id="paises_table">
+      <tr>
+        <th>Id</th>
+        <th>Pais</th>
+        <th>Descripción</th>
+        <th>Acciones</th>
+      </tr>
+      {% for pais in paises_list %}
+      <tr>
+        <td>{{ pais.0 }}</td>
+        <td>{{ pais.1 }}</td>
+        <td>{{ pais.2 }}</td>
+        <td>
+          <a href="#" data-pais="{{ pais.0 }}" class="delete_pais"><i class="fa fa-trash-o mr-2 text-secondary"></i></a>
+          <a href="#" data-pais="{{ pais.0 }}" class="edit_pais"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a>
+        </td>
+      </tr>  
+      {% endfor %}
+    </table>
+
+    <table class="table hide" id="paises_query_results">
+      <tr>
+        <th>Id</th>
+        <th>Pais</th>
+        <th>Descripción</th>
+        <th>Acciones</th>
+      </tr>     
+    </table>
+
+
+
+    
+  </div>
   <div class="tab-pane fade" id="nav-departamentos" role="tabpanel" aria-labelledby="nav-departamentos-tab">3</div>
   <div class="tab-pane fade" id="nav-municipios" role="tabpanel" aria-labelledby="nav-municipios-tab">3</div>
   <div class="tab-pane fade" id="nav-estados-aeronave" role="tabpanel" aria-labelledby="nav-estados-aeronave-tab">3</div>

@@ -386,6 +386,14 @@ class settings_recursos_form_edit(FlaskForm):
     codigo_recurso_edit = StringField(u'Código del recurso', validators=[InputRequired(message='El código del recurso es requerido'), Length(min=5, max=45, message='El código del recurso  debe tener entre 5 y 45 caracteres')])
     ruta_relativa_edit =  StringField('Ruta relativa', validators=[InputRequired(message='La ruta relativa del recurso es requerida'), Length(min=5, max=255, message='La ruta relativa del recurso debe tener entre 5 y 255 caracteres')])
 
+class settings_paises_form(FlaskForm):
+    nombre_pais = StringField('Nombre del pais', validators=[InputRequired(message='El nombre del pais es requerido'), Length(min=5, max=255, message='El nombre del pais debe tener entre 5 y 255 caracteres')])
+    descripcion_pais = StringField('Descripcion', validators=[InputRequired(message='La descripción del pais es requerida'), Length(min=5, max=255, message='La descripcion del pais debe tener entre 5 y 255 caracteres')])
+   
+class settings_paises_form_edit(FlaskForm):
+    nombre_pais_edit = StringField('Nombre del pais', validators=[InputRequired(message='El nombre del pais es requerido'), Length(min=5, max=255, message='El nombre del pais debe tener entre 5 y 255 caracteres')])
+    descripcion_pais_edit = StringField('Descripcion', validators=[InputRequired(message='La descripción del pais es requerida'), Length(min=5, max=255, message='La descripcion del pais debe tener entre 5 y 255 caracteres')])
+   
 
 @app.route("/admin/settings")
 def admin_settings():
@@ -395,6 +403,8 @@ def admin_settings():
     roles_form_edit = settings_roles_form_edit()
     recursos_form = settings_recursos_form()
     recursos_form_edit = settings_recursos_form_edit()
+    paises_form = settings_paises_form()
+    paises_form_edit = settings_paises_form_edit()
     rol_statement = "SELECT roles.id, roles.nombre_rol, roles.descripcion, recursos.ruta_relativa FROM roles left join recursos on recursos.id = roles.homepage ORDER BY roles.id ASC LIMIT 10"
     cur.execute(rol_statement)
     roles = cur.fetchall()
@@ -404,6 +414,9 @@ def admin_settings():
     recursos_statement = "select recursos.id, recursos.nombre_recurso, recursos.descripcion, recursos.codigo_recurso, recursos.ruta_relativa from recursos order by id limit 10"
     cur.execute(recursos_statement)
     recursos_list = cur.fetchall() 
+    paises_statement = "select paises.id, paises.nombre, paises.descripcion from paises order by id limit 10"
+    cur.execute(paises_statement)
+    paises_list = cur.fetchall() 
     roles_form.homepage.choices = resources_choices_list
     roles_form_edit.homepage_edit.choices = resources_choices_list
     cur.close()
@@ -414,6 +427,9 @@ def admin_settings():
     recursos_list=recursos_list,
     recursos_form=recursos_form, 
     recursos_form_edit=recursos_form_edit,
+    paises_list=paises_list,
+    paises_form=paises_form, 
+    paises_form_edit=paises_form_edit,
     error_message=request.args.get('error_message')
     )  
 
@@ -444,6 +460,24 @@ def admin_settings_recursos_add():
         cur = con.cursor()
         recurso_statement = "INSERT INTO recursos (nombre_recurso,descripcion,codigo_recurso,ruta_relativa) VALUES (?,?,?,?)"
         cur.execute(recurso_statement, [form.nombre_recurso.data, form.descripcion_recurso.data, form.codigo_recurso.data, form.ruta_relativa.data])
+        cur.close()
+        con.commit()
+        return redirect(url_for('admin_settings'))
+    else:
+        error_message = ''
+        for fieldName, errorMessages in form.errors.items():
+            for err in errorMessages:
+                error_message+= err +';'
+        return redirect(url_for('admin_settings', error_message=error_message))
+
+@app.route("/admin/settings/paises/add", methods=['POST'])
+def admin_settings_paises_add():
+    form = settings_paises_form()     
+    if form.validate_on_submit():
+        con = connection()
+        cur = con.cursor()
+        pais_statement = "INSERT INTO paises (nombre,descripcion) VALUES (?,?)"
+        cur.execute(pais_statement, [form.nombre_pais.data, form.descripcion_pais.data])
         cur.close()
         con.commit()
         return redirect(url_for('admin_settings'))
@@ -581,6 +615,72 @@ def admin_settings_recursos_rest_resource():
                     ruta_relativa = recurso[4] if recurso[4] == request.form['ruta_relativa'] else request.form['ruta_relativa'] 
                     recurso_update_statement = "UPDATE recursos SET nombre_recurso = ?, descripcion = ?, codigo_recurso = ?, ruta_relativa = ? WHERE id = ?" 
                     cur.execute(recurso_update_statement, [nombre_recurso, descripcion_recurso, codigo_recurso, ruta_relativa, recurso_id])
+                else:
+                    raise Exception("No se pudo actualizar el registro")              
+        except:
+            return jsonify([{ 'status': 'error', 'message': 'No se pudo actualizar el registro'}]),501
+        else:    
+            con.commit()                  
+            cur.close() 
+            return jsonify([{ 'status': 'ok', 'message': 'El registro seleccionado fue actualizado'}])
+
+@app.route("/admin/settings/paises", methods=['GET','POST','PUT','DELETE'])
+def admin_settings_paises_rest_resource():
+    if request.method == 'DELETE':
+        try:
+            con = connection()
+            cur = con.cursor()        
+            pais_id = request.form['pais_id']
+            pais_statement = "delete from paises where id=?"
+            cur.execute(pais_statement, [pais_id])       
+            #con.commit()                
+        except:
+            return jsonify([{ 'status': 'error', 'message': 'No se pudo eliminar el registro'}]),501
+        else:                      
+            cur.close() 
+            return jsonify([{ 'status': 'ok', 'message': 'El registro seleccionado fue eliminado'}])
+    
+    elif request.method == 'GET':
+        try:
+            con = connection()
+            cur = con.cursor()    
+            pais_id = request.args.get('pais_id')
+            q = request.args.get('q')
+
+
+            if pais_id and int(pais_id) > 0:
+                pais_statement = "select * from paises where id=?"
+                cur.execute(pais_statement, [pais_id])
+                pais = cur.fetchone()       
+                return jsonify(pais)         
+            elif q:
+                if q == '-1':
+                    pais_statement = "SELECT paises.id, paises.nombre, paises.descripcion FROM paises order by id asc limit 10"
+                    cur.execute(pais_statement)
+                else:
+                    pais_statement = "SELECT paises.id, paises.nombre, paises.descripcion FROM paises where paises.nombre like ? or paises.descripcion like ? "
+                    cur.execute(pais_statement, ['%'+q+'%','%'+q+'%'])
+                pais_list = cur.fetchall()       
+                return jsonify(pais_list)       
+        except:
+            return jsonify([{ 'status': 'error', 'message': 'No se pudo cargar el registro'}]),500
+        else:                      
+            cur.close()
+
+    elif request.method == 'PUT':
+        try:
+            con = connection()
+            cur = con.cursor()    
+            pais_id = request.form['pais_id']            
+            if int(pais_id) > 0:
+                pais_statement = "select * from paises where id=?"
+                cur.execute(pais_statement, [pais_id])
+                pais = cur.fetchone()    
+                if pais:
+                    nombre_pais = pais[1] if pais[1] == request.form['nombre_pais'] else request.form['nombre_pais'] 
+                    descripcion_pais = pais[2] if pais[2] == request.form['descripcion_pais'] else request.form['descripcion_pais']    
+                    pais_update_statement = "UPDATE paises SET nombre = ?, descripcion = ? WHERE id = ?" 
+                    cur.execute(pais_update_statement, [nombre_pais, descripcion_pais, pais_id])
                 else:
                     raise Exception("No se pudo actualizar el registro")              
         except:

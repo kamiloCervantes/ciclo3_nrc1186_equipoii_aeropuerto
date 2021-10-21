@@ -219,6 +219,111 @@ admin_settings.searchRecurso = function(e){
     });   
 }
 
+/*
+* Paises
+*/
+
+admin_settings.deletePais = function(e){
+    e.preventDefault();
+    var confirm_delete = confirm("¿Está seguro de eliminar el registro seleccionado?");
+
+    if(confirm_delete){
+        var self = $(this);
+        var pais_id = self.data('pais');
+        var jqxhr = $.ajax({
+            url: "/admin/settings/paises?format=json",
+            method: 'DELETE',
+            data: {
+                pais_id : pais_id
+            }
+        });
+
+        jqxhr.done(function(data){
+            self.closest('tr').remove();
+        });
+    }
+}
+
+admin_settings.loadEditPaisForm = function(e){
+    e.preventDefault();
+    var self = $(this);
+    var pais_id = self.data('pais');
+    var jqxhr = $.ajax({
+        url: "/admin/settings/paises?format=json",
+        method: 'GET',
+        data: {
+            pais_id : pais_id
+        }
+    });
+
+    jqxhr.done(function(data){
+        $('.editar-pais form input').val('');
+        $('#btn-edit-pais').data('pais', data[0]);
+        $('#nombre_pais_edit').val(data[1]);
+        $('#descripcion_pais_edit').val(data[2]);
+
+        $('.nuevo-pais').addClass('hide');
+        $('.editar-pais').removeClass('hide');
+    });    
+}
+
+admin_settings.cancelEditPaisForm = function(e){
+    e.preventDefault();
+    $('.nuevo-pais').removeClass('hide');
+    $('.editar-pais').addClass('hide');
+}
+
+admin_settings.editPais = function(e){
+    e.preventDefault();
+    var self = $(this);
+    var pais_id = self.data('pais');
+    var nombre_pais = $('#nombre_pais_edit').val();
+    var descripcion_pais = $('#descripcion_pais_edit').val();
+
+    var jqxhr = $.ajax({
+        url: "/admin/settings/paises?format=json",
+        method: 'PUT',
+        data: {
+            pais_id : pais_id,
+            nombre_pais : nombre_pais,
+            descripcion_pais : descripcion_pais,
+        }
+    });
+
+    jqxhr.done(function(data){
+       location.reload();
+    });    
+}
+
+admin_settings.searchPais = function(e){
+    e.preventDefault();
+    var self = $(this);
+    var q = $('#query_pais').val() != '' ? $('#query_pais').val() : '-1';
+
+    var jqxhr = $.ajax({
+        url: "/admin/settings/paises?format=json",
+        method: 'GET',
+        data: {
+            q : q
+        }
+    });
+
+    jqxhr.done(function(data){
+        $("#paises_query_results tr.pais-results-item").remove();
+        if(data.length > 0){
+            $.each(data, function(index,value){
+                $("#paises_query_results").append('<tr class="pais-results-item"><td>'+value[0]+'</td><td>'+value[1]+'</td><td>'+(value[2])+'</td><td><a href="#" data-pais="'+value[0]+'" class="delete_pais"><i class="fa fa-trash-o mr-2 text-secondary"></i></a><a href="#" data-pais="'+value[0]+'" class="edit_pais"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a></td></tr>');
+            });
+        }
+        else{
+            $("#paises_query_results").append('<tr><td colspan=4>No hay resultados</td></tr>');
+        }        
+        
+        $('#paises_table').addClass('hide');
+        $('#paises_query_results').removeClass('hide');
+    });   
+}
+
 
 admin_settings.init = function(){
     /*
@@ -237,6 +342,14 @@ admin_settings.init = function(){
     $('#btn-cancelar-edit-recurso').on('click', admin_settings.cancelEditRecursoForm);
     $('#btn-edit-recurso').on('click', admin_settings.editRecurso);
     $('#recursos_search_form').on('submit', admin_settings.searchRecurso);
+    /*
+    * Paises
+    */      
+    $('body').on('click','.delete_pais', admin_settings.deletePais);
+    $('body').on('click', '.edit_pais', admin_settings.loadEditPaisForm);
+    $('#btn-cancelar-edit-pais').on('click', admin_settings.cancelEditPaisForm);
+    $('#btn-edit-pais').on('click', admin_settings.editPais);
+    $('#paises_search_form').on('submit', admin_settings.searchPais);
 }
 
 
