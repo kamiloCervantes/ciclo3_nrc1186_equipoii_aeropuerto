@@ -374,22 +374,48 @@ class settings_roles_form_edit(FlaskForm):
     descripcion_edit = StringField('Descripcion', validators=[InputRequired(message='La descripción del rol es requerida'), Length(min=5, max=45, message='El nombre del rol debe tener entre 5 y 45 caracteres')])
     homepage_edit = SelectField(u'Home', coerce=int, validate_choice=False)
 
+class settings_recursos_form(FlaskForm):
+    nombre_recurso = StringField('Nombre del recurso', validators=[InputRequired(message='El nombre del recurso es requerido'), Length(min=5, max=45, message='El nombre del recurso debe tener entre 5 y 45 caracteres')])
+    descripcion_recurso = StringField('Descripcion', validators=[InputRequired(message='La descripción del recurso es requerida'), Length(min=5, max=255, message='La descripcion del recurso debe tener entre 5 y 255 caracteres')])
+    codigo_recurso = StringField(u'Código del recurso', validators=[InputRequired(message='El código del recurso es requerido'), Length(min=5, max=45, message='El código del recurso  debe tener entre 5 y 45 caracteres')])
+    ruta_relativa =  StringField('Ruta relativa', validators=[InputRequired(message='La ruta relativa del recurso es requerida'), Length(min=5, max=255, message='La ruta relativa del recurso debe tener entre 5 y 255 caracteres')])
+
+class settings_recursos_form_edit(FlaskForm):
+    nombre_recurso_edit = StringField('Nombre del recurso', validators=[InputRequired(message='El nombre del recurso es requerido'), Length(min=5, max=45, message='El nombre del recurso debe tener entre 5 y 45 caracteres')])
+    descripcion_recurso_edit = StringField('Descripcion', validators=[InputRequired(message='La descripción del recurso es requerida'), Length(min=5, max=255, message='La descripcion del recurso debe tener entre 5 y 255 caracteres')])
+    codigo_recurso_edit = StringField(u'Código del recurso', validators=[InputRequired(message='El código del recurso es requerido'), Length(min=5, max=45, message='El código del recurso  debe tener entre 5 y 45 caracteres')])
+    ruta_relativa_edit =  StringField('Ruta relativa', validators=[InputRequired(message='La ruta relativa del recurso es requerida'), Length(min=5, max=255, message='La ruta relativa del recurso debe tener entre 5 y 255 caracteres')])
+
+
 @app.route("/admin/settings")
 def admin_settings():
     con = connection()
     cur = con.cursor()
     roles_form = settings_roles_form()
     roles_form_edit = settings_roles_form_edit()
+    recursos_form = settings_recursos_form()
+    recursos_form_edit = settings_recursos_form_edit()
     rol_statement = "SELECT roles.id, roles.nombre_rol, roles.descripcion, recursos.ruta_relativa FROM roles left join recursos on recursos.id = roles.homepage ORDER BY roles.id ASC LIMIT 10"
     cur.execute(rol_statement)
     roles = cur.fetchall()
-    resources_statement = "select id,ruta_relativa from recursos"
-    cur.execute(resources_statement)
-    resources_list = cur.fetchall() 
-    roles_form.homepage.choices = resources_list
-    roles_form_edit.homepage_edit.choices = resources_list
+    resources_choices_statement = "select id,ruta_relativa from recursos"
+    cur.execute(resources_choices_statement)
+    resources_choices_list = cur.fetchall() 
+    recursos_statement = "select recursos.id, recursos.nombre_recurso, recursos.descripcion, recursos.codigo_recurso, recursos.ruta_relativa from recursos order by id limit 10"
+    cur.execute(recursos_statement)
+    recursos_list = cur.fetchall() 
+    roles_form.homepage.choices = resources_choices_list
+    roles_form_edit.homepage_edit.choices = resources_choices_list
     cur.close()
-    return render_template("admin_settings.html",roles_form=roles_form, roles_form_edit=roles_form_edit, roles_list=roles)  
+    return render_template("admin_settings.html",
+    roles_form=roles_form, 
+    roles_form_edit=roles_form_edit, 
+    roles_list=roles, 
+    recursos_list=recursos_list,
+    recursos_form=recursos_form, 
+    recursos_form_edit=recursos_form_edit,
+    error_message=request.args.get('error_message')
+    )  
 
 @app.route("/admin/settings/roles/add", methods=['POST'])
 def admin_settings_roles_add():
@@ -402,7 +428,32 @@ def admin_settings_roles_add():
         cur.close()
         con.commit()
         return redirect(url_for('admin_settings'))
+    else:
+        error_message = ''
+        for fieldName, errorMessages in form.errors.items():
+            for err in errorMessages:
+                error_message+= err +';'
+        return redirect(url_for('admin_settings', error_message=error_message))
+    
 
+@app.route("/admin/settings/recursos/add", methods=['POST'])
+def admin_settings_recursos_add():
+    form = settings_recursos_form()     
+    if form.validate_on_submit():
+        con = connection()
+        cur = con.cursor()
+        recurso_statement = "INSERT INTO recursos (nombre_recurso,descripcion,codigo_recurso,ruta_relativa) VALUES (?,?,?,?)"
+        cur.execute(recurso_statement, [form.nombre_recurso.data, form.descripcion_recurso.data, form.codigo_recurso.data, form.ruta_relativa.data])
+        cur.close()
+        con.commit()
+        return redirect(url_for('admin_settings'))
+    else:
+        error_message = ''
+        for fieldName, errorMessages in form.errors.items():
+            for err in errorMessages:
+                error_message+= err +';'
+        return redirect(url_for('admin_settings', error_message=error_message))
+  
 
 @app.route("/admin/settings/roles", methods=['GET','POST','PUT','DELETE'])
 def admin_settings_roles_rest_resource():
@@ -434,8 +485,12 @@ def admin_settings_roles_rest_resource():
                 rol = cur.fetchone()       
                 return jsonify(rol)         
             elif q:
-                rol_statement = "SELECT roles.id, roles.nombre_rol, roles.descripcion, recursos.ruta_relativa FROM roles left join recursos on recursos.id = roles.homepage where roles.nombre_rol like ? or roles.descripcion like ? "
-                cur.execute(rol_statement, ['%'+q+'%','%'+q+'%'])
+                if q == '-1':
+                    rol_statement = "SELECT roles.id, roles.nombre_rol, roles.descripcion, recursos.ruta_relativa FROM roles left join recursos on recursos.id = roles.homepage order by roles.id limit 10 "
+                    cur.execute(rol_statement)
+                else:
+                    rol_statement = "SELECT roles.id, roles.nombre_rol, roles.descripcion, recursos.ruta_relativa FROM roles left join recursos on recursos.id = roles.homepage where roles.nombre_rol like ? or roles.descripcion like ? "
+                    cur.execute(rol_statement, ['%'+q+'%','%'+q+'%'])
                 rol_list = cur.fetchall()       
                 return jsonify(rol_list)       
         except:
@@ -458,6 +513,74 @@ def admin_settings_roles_rest_resource():
                     homepage_rol = rol[3] if rol[3] == request.form['homepage_rol'] else request.form['homepage_rol']    
                     rol_update_statement = "UPDATE roles SET nombre_rol = ?, descripcion = ?, homepage = ? WHERE id = ?" 
                     cur.execute(rol_update_statement, [nombre_rol, descripcion_rol, homepage_rol, rol_id])
+                else:
+                    raise Exception("No se pudo actualizar el registro")              
+        except:
+            return jsonify([{ 'status': 'error', 'message': 'No se pudo actualizar el registro'}]),501
+        else:    
+            con.commit()                  
+            cur.close() 
+            return jsonify([{ 'status': 'ok', 'message': 'El registro seleccionado fue actualizado'}])
+
+@app.route("/admin/settings/recursos", methods=['GET','POST','PUT','DELETE'])
+def admin_settings_recursos_rest_resource():
+    if request.method == 'DELETE':
+        try:
+            con = connection()
+            cur = con.cursor()        
+            recurso_id = request.form['recurso_id']
+            recurso_statement = "delete from recursos where id=?"
+            cur.execute(recurso_statement, [recurso_id])       
+            #con.commit()                
+        except:
+            return jsonify([{ 'status': 'error', 'message': 'No se pudo eliminar el registro'}]),501
+        else:                      
+            cur.close() 
+            return jsonify([{ 'status': 'ok', 'message': 'El registro seleccionado fue eliminado'}])
+    
+    elif request.method == 'GET':
+        try:
+            con = connection()
+            cur = con.cursor()    
+            recurso_id = request.args.get('recurso_id')
+            q = request.args.get('q')
+
+
+            if recurso_id and int(recurso_id) > 0:
+                recurso_statement = "select * from recursos where id=?"
+                cur.execute(recurso_statement, [recurso_id])
+                recurso = cur.fetchone()       
+                return jsonify(recurso)         
+            elif q:
+                if q == '-1':
+                    recurso_statement = "SELECT recursos.id, recursos.nombre_recurso, recursos.descripcion, recursos.ruta_relativa FROM recursos order by id asc limit 10"
+                    cur.execute(recurso_statement)
+                else:
+                    recurso_statement = "SELECT recursos.id, recursos.nombre_recurso, recursos.descripcion, recursos.ruta_relativa FROM recursos where recursos.nombre_recurso like ? or recursos.descripcion like ? or recursos.codigo_recurso like ? or recursos.ruta_relativa like ?"
+                    cur.execute(recurso_statement, ['%'+q+'%','%'+q+'%','%'+q+'%','%'+q+'%'])
+                recurso_list = cur.fetchall()       
+                return jsonify(recurso_list)       
+        except:
+            return jsonify([{ 'status': 'error', 'message': 'No se pudo cargar el registro'}]),500
+        else:                      
+            cur.close()
+
+    elif request.method == 'PUT':
+        try:
+            con = connection()
+            cur = con.cursor()    
+            recurso_id = request.form['recurso_id']            
+            if int(recurso_id) > 0:
+                recurso_statement = "select * from recursos where id=?"
+                cur.execute(recurso_statement, [recurso_id])
+                recurso = cur.fetchone()    
+                if recurso:
+                    nombre_recurso = recurso[1] if recurso[1] == request.form['nombre_recurso'] else request.form['nombre_recurso'] 
+                    descripcion_recurso = recurso[2] if recurso[2] == request.form['descripcion_recurso'] else request.form['descripcion_recurso']    
+                    codigo_recurso = recurso[3] if recurso[3] == request.form['codigo_recurso'] else request.form['codigo_recurso']    
+                    ruta_relativa = recurso[4] if recurso[4] == request.form['ruta_relativa'] else request.form['ruta_relativa'] 
+                    recurso_update_statement = "UPDATE recursos SET nombre_recurso = ?, descripcion = ?, codigo_recurso = ?, ruta_relativa = ? WHERE id = ?" 
+                    cur.execute(recurso_update_statement, [nombre_recurso, descripcion_recurso, codigo_recurso, ruta_relativa, recurso_id])
                 else:
                     raise Exception("No se pudo actualizar el registro")              
         except:

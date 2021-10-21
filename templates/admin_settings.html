@@ -9,6 +9,13 @@
 {% block navbar_menu %}{% endblock %}
 {% block content %}
 <h5 class="card-title"><b>Configuración del sistema</b></h5>
+{% if error_message: %}
+<div class="alert alert-danger" role="alert">
+  <p>Se encontraron los siguientes errores:</p>
+  {{ error_message.replace(';', '<br/>') | safe }}
+</div>
+{% endif %}
+
 <nav>
   <div class="nav nav-tabs" id="nav-tab" role="tablist">
     <a class="nav-link active" id="nav-roles-tab" data-toggle="tab" href="#nav-roles" role="tab" aria-controls="nav-roles" aria-selected="true">Roles</a>
@@ -106,7 +113,7 @@
       <form id="roles_search_form">
         <div class="form-group">
             <label for="query_rol">Buscar: </label> 
-            <input id="query_rol" name="query_rol" required="" type="text" value=""> 
+            <input id="query_rol" name="query_rol" type="text" value=""> 
             <button type="submit" class="btn btn-primary btn-sm text-light">Enviar</button>
         </div>
       </form>
@@ -143,7 +150,145 @@
       </tr>     
     </table>
   </div>
-  <div class="tab-pane fade" id="nav-recursos" role="tabpanel" aria-labelledby="nav-recursos-tab">2</div>
+  <div class="tab-pane fade" id="nav-recursos" role="tabpanel" aria-labelledby="nav-recursos-tab">
+    <br/>
+    <h2>Configuración de recursos</h2>
+    <div class="nuevo-recurso">
+      <h3>Nuevo recurso</h3>
+      <form class="" method="POST" action="{{ url_for('admin_settings_recursos_add') }}" autocomplete="off" novalidate>
+        {{recursos_form.csrf_token }}
+        <div class="form-group">
+          {{recursos_form.nombre_recurso.label}} 
+          {{recursos_form.nombre_recurso}} 
+          </div>
+          <ul>
+      {%for error in recursos_form.nombre_recurso.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{recursos_form.descripcion_recurso.label}} 
+        {{recursos_form.descripcion_recurso}} 
+      </div>
+      <ul>
+      {%for error in recursos_form.descripcion_recurso.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{recursos_form.codigo_recurso.label}} 
+        {{recursos_form.codigo_recurso}} 
+      </div>
+      <ul>
+      {%for error in recursos_form.codigo_recurso.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{recursos_form.ruta_relativa.label}} 
+        {{recursos_form.ruta_relativa}} 
+      </div>
+      <ul>
+      {%for error in recursos_form.ruta_relativa.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light">Guardar</button>
+      </form>
+    </div>
+    <div class="editar-recurso hide">
+      <h3>Editar recurso</h3>
+      <form class="" method="" action="" autocomplete="off" novalidate>
+        {{recursos_form_edit.csrf_token }}
+        <div class="form-group">
+          {{recursos_form_edit.nombre_recurso_edit.label}} 
+          {{recursos_form_edit.nombre_recurso_edit}} 
+          </div>
+          <ul>
+      {%for error in recursos_form_edit.nombre_recurso_edit.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{recursos_form_edit.descripcion_recurso_edit.label}} 
+        {{recursos_form_edit.descripcion_recurso_edit}} 
+      </div>
+      <ul>
+      {%for error in recursos_form_edit.descripcion_recurso_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{recursos_form_edit.codigo_recurso_edit.label}} 
+        {{recursos_form_edit.codigo_recurso_edit}} 
+      </div>
+      <ul>
+      {%for error in recursos_form_edit.codigo_recurso_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+
+      <div class="form-group">
+        {{recursos_form_edit.ruta_relativa_edit.label}} 
+        {{recursos_form_edit.ruta_relativa_edit}} 
+      </div>
+      <ul>
+      {%for error in recursos_form_edit.ruta_relativa_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light" id="btn-edit-recurso">Guardar</button>
+      <a href="#" class="btn btn-lg btn-primary text-light" id="btn-cancelar-edit-recurso">Cancelar</a>
+
+      </form>
+    </div>
+    <br/>
+    <h3>Listado de recursos</h3>
+    <div class="buscar-recurso">
+      <form id="recursos_search_form">
+        <div class="form-group">
+            <label for="query_recurso">Buscar: </label> 
+            <input id="query_recurso" name="query_recurso" type="text" value=""> 
+            <button type="submit" class="btn btn-primary btn-sm text-light">Enviar</button>
+        </div>
+      </form>
+    </div>
+    <table class="table" id="recursos_table">
+      <tr>
+        <th>Id</th>
+        <th>Recurso</th>
+        <th>Descripción</th>
+        <th>Ruta relativa</th>
+        <th>Acciones</th>
+      </tr>
+      {% for recurso in recursos_list %}
+      <tr>
+        <td>{{ recurso.0 }}</td>
+        <td>{{ recurso.1 }}</td>
+        <td>{{ recurso.2 }}</td>
+        <td>{{ recurso.4 }}</td>
+        <td>
+          <a href="#" data-recurso="{{ recurso.0 }}" class="delete_recurso"><i class="fa fa-trash-o mr-2 text-secondary"></i></a>
+          <a href="#" data-recurso="{{ recurso.0 }}" class="edit_recurso"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a>
+        </td>
+      </tr>  
+      {% endfor %}
+    </table>
+
+    <table class="table hide" id="recursos_query_results">
+      <tr>
+        <th>Id</th>
+        <th>Recurso</th>
+        <th>Descripción</th>
+        <th>Ruta relativa</th>
+        <th>Acciones</th>
+      </tr>     
+    </table>
+
+
+  </div>
   <div class="tab-pane fade" id="nav-permisos" role="tabpanel" aria-labelledby="nav-permisos-tab">3</div>
   <div class="tab-pane fade" id="nav-paises" role="tabpanel" aria-labelledby="nav-paises-tab">3</div>
   <div class="tab-pane fade" id="nav-departamentos" role="tabpanel" aria-labelledby="nav-departamentos-tab">3</div>
