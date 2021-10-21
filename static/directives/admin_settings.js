@@ -100,7 +100,7 @@ admin_settings.searchRol = function(e){
             });
         }
         else{
-            $("#roles_query_results").append('<tr><td colspan=5>No hay resultados</td></tr>');
+            $("#roles_query_results").append('<tr class="rol-results-item"><td colspan=5>No hay resultados</td></tr>');
         }        
         
         $('#roles_table').addClass('hide');
@@ -211,7 +211,7 @@ admin_settings.searchRecurso = function(e){
             });
         }
         else{
-            $("#recursos_query_results").append('<tr><td colspan=4>No hay resultados</td></tr>');
+            $("#recursos_query_results").append('<tr class="recurso-results-item"><td colspan=4>No hay resultados</td></tr>');
         }        
         
         $('#recursos_table').addClass('hide');
@@ -316,12 +316,121 @@ admin_settings.searchPais = function(e){
             });
         }
         else{
-            $("#paises_query_results").append('<tr><td colspan=4>No hay resultados</td></tr>');
+            $("#paises_query_results").append('<tr class="pais-results-item"><td colspan=4>No hay resultados</td></tr>');
         }        
         
         $('#paises_table').addClass('hide');
         $('#paises_query_results').removeClass('hide');
     });   
+}
+
+/*
+* Departamentos
+*/
+
+admin_settings.deleteDepartamento = function(e){
+    e.preventDefault();
+    var confirm_delete = confirm("¿Está seguro de eliminar el registro seleccionado?");
+
+    if(confirm_delete){
+        var self = $(this);
+        var departamento_id = self.data('departamento');
+        var jqxhr = $.ajax({
+            url: "/admin/settings/departamentos?format=json",
+            method: 'DELETE',
+            data: {
+                departamento_id : departamento_id
+            }
+        });
+
+        jqxhr.done(function(data){
+            self.closest('tr').remove();
+        });
+    }
+}
+
+admin_settings.loadEditDepartamentoForm = function(e){
+    e.preventDefault();
+    var self = $(this);
+    var departamento_id = self.data('departamento');
+    var jqxhr = $.ajax({
+        url: "/admin/settings/departamentos?format=json",
+        method: 'GET',
+        data: {
+            departamento_id : departamento_id
+        }
+    });
+
+    jqxhr.done(function(data){
+        $('.editar-departamento form input').val('');
+        $('#btn-edit-departamento').data('departamento', data[0]);
+        $('#nombre_departamento_edit').val(data[1]);
+        $('#descripcion_departamento_edit').val(data[2]);
+        $('#pais_departamento_edit').val(data[3]);
+
+        $('.nuevo-departamento').addClass('hide');
+        $('.editar-departamento').removeClass('hide');
+    });    
+}
+
+admin_settings.cancelEditDepartamentoForm = function(e){
+    e.preventDefault();
+    $('.nuevo-departamento').removeClass('hide');
+    $('.editar-departamento').addClass('hide');
+}
+
+admin_settings.editDepartamento = function(e){
+    e.preventDefault();
+    var self = $(this);
+    var departamento_id = self.data('departamento');
+    var nombre_departamento = $('#nombre_departamento_edit').val();
+    var descripcion_departamento = $('#descripcion_departamento_edit').val();
+    var pais_departamento = $('#pais_departamento_edit').val();
+
+    var jqxhr = $.ajax({
+        url: "/admin/settings/departamentos?format=json",
+        method: 'PUT',
+        data: {
+            departamento_id : departamento_id,
+            nombre_departamento : nombre_departamento,
+            descripcion_departamento : descripcion_departamento,
+            pais_departamento : pais_departamento
+        }
+    });
+
+    jqxhr.done(function(data){
+       location.reload();
+    });    
+}
+
+admin_settings.searchDepartamento = function(e){
+    e.preventDefault();
+    var self = $(this);
+    var q = $('#query_departamento').val() != '' ? $('#query_departamento').val() : '-1';
+
+    var jqxhr = $.ajax({
+        url: "/admin/settings/departamentos?format=json",
+        method: 'GET',
+        data: {
+            q : q
+        }
+    });
+
+    jqxhr.done(function(data){
+        $("#departamentos_query_results tr.departamento-results-item").remove();
+        if(data.length > 0){
+            $.each(data, function(index,value){
+                $("#departamentos_query_results").append('<tr class="departamento-results-item"><td>'+value[0]+'</td><td>'+value[1]+'</td><td>'+(value[2])+'</td><td><a href="#" data-departamento="'+value[0]+'" class="delete_departamento"><i class="fa fa-trash-o mr-2 text-secondary"></i></a><a href="#" data-departamento="'+value[0]+'" class="edit_departamento"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a></td></tr>');
+            });
+        }
+        else{
+            $("#departamentos_query_results").append('<tr class="departamento-results-item"><td colspan=4>No hay resultados</td></tr>');
+        }        
+        
+        $('#departamentos_table').addClass('hide');
+        $('#departamentos_query_results').removeClass('hide');
+    });   
+
 }
 
 
@@ -350,6 +459,14 @@ admin_settings.init = function(){
     $('#btn-cancelar-edit-pais').on('click', admin_settings.cancelEditPaisForm);
     $('#btn-edit-pais').on('click', admin_settings.editPais);
     $('#paises_search_form').on('submit', admin_settings.searchPais);
+    /*
+    * Departamentos
+    */      
+    $('body').on('click','.delete_departamento', admin_settings.deleteDepartamento);
+    $('body').on('click', '.edit_departamento', admin_settings.loadEditDepartamentoForm);
+    $('#btn-cancelar-edit-departamento').on('click', admin_settings.cancelEditDepartamentoForm);
+    $('#btn-edit-departamento').on('click', admin_settings.editDepartamento);
+    $('#departamentos_search_form').on('submit', admin_settings.searchDepartamento);
 }
 
 

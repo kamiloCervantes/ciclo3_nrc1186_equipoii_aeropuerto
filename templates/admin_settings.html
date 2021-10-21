@@ -393,7 +393,127 @@
 
     
   </div>
-  <div class="tab-pane fade" id="nav-departamentos" role="tabpanel" aria-labelledby="nav-departamentos-tab">3</div>
+  <div class="tab-pane fade" id="nav-departamentos" role="tabpanel" aria-labelledby="nav-departamentos-tab">
+
+    <br/>
+    <h2>Configuración de departamentos</h2>
+    <div class="nuevo-departamento">
+      <h3>Nuevo departamento</h3>
+      <form class="" method="POST" action="{{ url_for('admin_settings_departamentos_add') }}" autocomplete="off" novalidate>
+        {{departamentos_form.csrf_token }}
+        <div class="form-group">
+          {{departamentos_form.nombre_departamento.label}} 
+          {{departamentos_form.nombre_departamento}} 
+          </div>
+          <ul>
+      {%for error in departamentos_form.nombre_departamento.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{departamentos_form.descripcion_departamento.label}} 
+        {{departamentos_form.descripcion_departamento}} 
+      </div>
+      <ul>
+      {%for error in departamentos_form.descripcion_departamento.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+
+      <div class="form-group">
+        {{departamentos_form.pais_departamento.label}} 
+        {{departamentos_form.pais_departamento}} 
+      </div>
+      <ul>
+      {%for error in departamentos_form_edit.pais_departamento_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+    
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light">Guardar</button>
+      </form>
+    </div>
+    <div class="editar-departamento hide">
+      <h3>Editar departamento</h3>
+      <form class="" method="" action="" autocomplete="off" novalidate>
+        {{departamentos_form_edit.csrf_token }}
+        <div class="form-group">
+          {{departamentos_form_edit.nombre_departamento_edit.label}} 
+          {{departamentos_form_edit.nombre_departamento_edit}} 
+          </div>
+          <ul>
+      {%for error in departamentos_form_edit.nombre_departamento_edit.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{departamentos_form_edit.descripcion_departamento_edit.label}} 
+        {{departamentos_form_edit.descripcion_departamento_edit}} 
+      </div>
+      <ul>
+      {%for error in departamentos_form_edit.descripcion_departamento_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+
+      <div class="form-group">
+        {{departamentos_form_edit.pais_departamento_edit.label}} 
+        {{departamentos_form_edit.pais_departamento_edit}} 
+      </div>
+      <ul>
+      {%for error in departamentos_form_edit.pais_departamento_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light" id="btn-edit-departamento">Guardar</button>
+      <a href="#" class="btn btn-lg btn-primary text-light" id="btn-cancelar-edit-departamento">Cancelar</a>
+
+      </form>
+    </div>
+    <br/>
+    <h3>Listado de departamentos</h3>
+    <div class="buscar-departamento">
+      <form id="departamentos_search_form">
+        <div class="form-group">
+            <label for="query_departamento">Buscar: </label> 
+            <input id="query_departamento" name="query_departamento" type="text" value=""> 
+            <button type="submit" class="btn btn-primary btn-sm text-light">Enviar</button>
+        </div>
+      </form>
+    </div>
+    <table class="table" id="departamentos_table">
+      <tr>
+        <th>Id</th>
+        <th>Departamento</th>
+        <th>Pais</th>
+        <th>Acciones</th>
+      </tr>
+      {% for departamento in departamentos_list %}
+      <tr>
+        <td>{{ departamento.0 }}</td>
+        <td>{{ departamento.1 }}</td>
+        <td>{{ departamento.3 }}</td>
+        <td>
+          <a href="#" data-departamento="{{ departamento.0 }}" class="delete_departamento"><i class="fa fa-trash-o mr-2 text-secondary"></i></a>
+          <a href="#" data-departamento="{{ departamento.0 }}" class="edit_departamento"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a>
+        </td>
+      </tr>  
+      {% endfor %}
+    </table>
+
+    <table class="table hide" id="departamentos_query_results">
+      <tr>
+        <th>Id</th>
+        <th>Departamento</th>
+        <th>Pais</th>
+        <th>Acciones</th>
+      </tr>     
+    </table>
+
+
+  </div>
   <div class="tab-pane fade" id="nav-municipios" role="tabpanel" aria-labelledby="nav-municipios-tab">3</div>
   <div class="tab-pane fade" id="nav-estados-aeronave" role="tabpanel" aria-labelledby="nav-estados-aeronave-tab">3</div>
   <div class="tab-pane fade" id="nav-estados-piloto" role="tabpanel" aria-labelledby="nav-estados-piloto-tab">3</div>
