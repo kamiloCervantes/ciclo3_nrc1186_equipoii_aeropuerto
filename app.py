@@ -404,10 +404,21 @@ class settings_departamentos_form_edit(FlaskForm):
     descripcion_departamento_edit = StringField('Descripcion', validators=[InputRequired(message='La descripción del departamento es requerida'), Length(min=5, max=255, message='La descripcion del departamento debe tener entre 5 y 255 caracteres')])
     pais_departamento_edit = SelectField(u'País', coerce=int, validate_choice=False)
 
+class settings_municipios_form(FlaskForm):
+    nombre_municipio = StringField('Nombre del municipio', validators=[InputRequired(message='El nombre del municipio es requerido'), Length(min=5, max=255, message='El nombre del municipio debe tener entre 5 y 255 caracteres')])
+    descripcion_municipio = StringField('Descripcion', validators=[InputRequired(message='La descripción del municipio es requerida'), Length(min=5, max=255, message='La descripcion del municipio debe tener entre 5 y 255 caracteres')])
+    departamento_municipio = SelectField(u'Departamento', coerce=int, validate_choice=False)
+
+class settings_municipios_form_edit(FlaskForm):
+    nombre_municipio_edit = StringField('Nombre del municipio', validators=[InputRequired(message='El nombre del municipio es requerido'), Length(min=5, max=255, message='El nombre del municipio debe tener entre 5 y 255 caracteres')])
+    descripcion_municipio_edit = StringField('Descripcion', validators=[InputRequired(message='La descripción del municipio es requerida'), Length(min=5, max=255, message='La descripcion del municipio debe tener entre 5 y 255 caracteres')])
+    departamento_municipio_edit = SelectField(u'Departamento', coerce=int, validate_choice=False)
+
 @app.route("/admin/settings")
 def admin_settings():
     con = connection()
     cur = con.cursor()
+    #forms
     roles_form = settings_roles_form()
     roles_form_edit = settings_roles_form_edit()
     recursos_form = settings_recursos_form()
@@ -416,12 +427,12 @@ def admin_settings():
     paises_form_edit = settings_paises_form_edit()
     departamentos_form = settings_departamentos_form()
     departamentos_form_edit = settings_departamentos_form_edit()
+    municipios_form = settings_municipios_form()
+    municipios_form_edit = settings_municipios_form_edit()
+    #entities
     rol_statement = "SELECT roles.id, roles.nombre_rol, roles.descripcion, recursos.ruta_relativa FROM roles left join recursos on recursos.id = roles.homepage ORDER BY roles.id ASC LIMIT 10"
     cur.execute(rol_statement)
-    roles = cur.fetchall()
-    resources_choices_statement = "select id,ruta_relativa from recursos"
-    cur.execute(resources_choices_statement)
-    resources_choices_list = cur.fetchall() 
+    roles = cur.fetchall()    
     recursos_statement = "select recursos.id, recursos.nombre_recurso, recursos.descripcion, recursos.codigo_recurso, recursos.ruta_relativa from recursos order by id limit 10"
     cur.execute(recursos_statement)
     recursos_list = cur.fetchall() 
@@ -431,13 +442,28 @@ def admin_settings():
     departamentos_statement = "select departamentos.id, departamentos.nombre, departamentos.descripcion, paises.nombre from departamentos inner join paises on paises.id = departamentos.paises_id order by departamentos.id limit 10"
     cur.execute(departamentos_statement)
     departamentos_list = cur.fetchall() 
-    paises_choice_statement = "select paises.id, paises.nombre from paises order by id limit 10"
+    municipios_statement = "select municipios.id, municipios.nombre, municipios.descripcion, departamentos.nombre from municipios inner join departamentos on departamentos.id = municipios.departamentos_id order by municipios.id limit 10"
+    cur.execute(municipios_statement)
+    municipios_list = cur.fetchall()
+    #choices queries
+    resources_choices_statement = "select id,ruta_relativa from recursos"
+    cur.execute(resources_choices_statement)
+    resources_choices_list = cur.fetchall() 
+    paises_choice_statement = "select paises.id, paises.nombre from paises order by id"
     cur.execute(paises_choice_statement)
     paises_choices_list = cur.fetchall() 
+    departamentos_choice_statement = "select departamentos.id, departamentos.nombre from departamentos order by departamentos.id"
+    cur.execute(departamentos_choice_statement)
+    departamentos_choices_list = cur.fetchall()
+    # setting choices
     roles_form.homepage.choices = resources_choices_list
     roles_form_edit.homepage_edit.choices = resources_choices_list
     departamentos_form.pais_departamento.choices = paises_choices_list
     departamentos_form_edit.pais_departamento_edit.choices = paises_choices_list
+    municipios_form.departamento_municipio.choices = departamentos_choices_list
+    municipios_form_edit.departamento_municipio_edit.choices = departamentos_choices_list
+    
+    
     cur.close()
     return render_template("admin_settings.html",
     roles_form=roles_form, 
@@ -452,6 +478,9 @@ def admin_settings():
     departamentos_list=departamentos_list,
     departamentos_form=departamentos_form, 
     departamentos_form_edit=departamentos_form_edit,
+    municipios_list=municipios_list,
+    municipios_form=municipios_form, 
+    municipios_form_edit=municipios_form_edit,
     error_message=request.args.get('error_message')
     )  
 
@@ -518,6 +547,24 @@ def admin_settings_departamentos_add():
         cur = con.cursor()
         departamento_statement = "INSERT INTO departamentos (nombre,descripcion,paises_id) VALUES (?,?,?)"
         cur.execute(departamento_statement, [form.nombre_departamento.data, form.descripcion_departamento.data, form.pais_departamento.data])
+        cur.close()
+        con.commit()
+        return redirect(url_for('admin_settings'))
+    else:
+        error_message = ''
+        for fieldName, errorMessages in form.errors.items():
+            for err in errorMessages:
+                error_message+= err +';'
+        return redirect(url_for('admin_settings', error_message=error_message))
+
+@app.route("/admin/settings/municipios/add", methods=['POST'])
+def admin_settings_municipios_add():
+    form = settings_municipios_form()     
+    if form.validate_on_submit():
+        con = connection()
+        cur = con.cursor()
+        municipio_statement = "INSERT INTO municipios (nombre,descripcion,departamentos_id) VALUES (?,?,?)"
+        cur.execute(municipio_statement, [form.nombre_municipio.data, form.descripcion_municipio.data, form.departamento_municipio.data])
         cur.close()
         con.commit()
         return redirect(url_for('admin_settings'))
@@ -785,8 +832,9 @@ def admin_settings_departamentos_rest_resource():
                 if departamento:
                     nombre_departamento = departamento[1] if departamento[1] == request.form['nombre_departamento'] else request.form['nombre_departamento'] 
                     descripcion_departamento = departamento[2] if departamento[2] == request.form['descripcion_departamento'] else request.form['descripcion_departamento']    
-                    departamento_update_statement = "UPDATE departamentos SET nombre = ?, descripcion = ? WHERE id = ?" 
-                    cur.execute(departamento_update_statement, [nombre_departamento, descripcion_departamento, departamento_id])
+                    pais_departamento = departamento[3] if departamento[3] == request.form['pais_departamento'] else request.form['pais_departamento']    
+                    departamento_update_statement = "UPDATE departamentos SET nombre = ?, descripcion = ?, paises_id = ? WHERE id = ?" 
+                    cur.execute(departamento_update_statement, [nombre_departamento, descripcion_departamento, pais_departamento, departamento_id])
                 else:
                     raise Exception("No se pudo actualizar el registro")              
         except:
@@ -796,7 +844,72 @@ def admin_settings_departamentos_rest_resource():
             cur.close() 
             return jsonify([{ 'status': 'ok', 'message': 'El registro seleccionado fue actualizado'}])
 
+@app.route("/admin/settings/municipios", methods=['GET','POST','PUT','DELETE'])
+def admin_settings_municipios_rest_resource():
+    if request.method == 'DELETE':
+        try:
+            con = connection()
+            cur = con.cursor()        
+            municipio_id = request.form['municipio_id']
+            municipio_statement = "delete from municipios where id=?"
+            cur.execute(municipio_statement, [municipio_id])       
+            #con.commit()                
+        except:
+            return jsonify([{ 'status': 'error', 'message': 'No se pudo eliminar el registro'}]),501
+        else:                      
+            cur.close() 
+            return jsonify([{ 'status': 'ok', 'message': 'El registro seleccionado fue eliminado'}])
+    
+    elif request.method == 'GET':
+        try:
+            con = connection()
+            cur = con.cursor()    
+            municipio_id = request.args.get('municipio_id')
+            q = request.args.get('q')
 
+
+            if municipio_id and int(municipio_id) > 0:
+                municipio_statement = "select * from municipios where id=?"
+                cur.execute(municipio_statement, [municipio_id])
+                municipio = cur.fetchone()       
+                return jsonify(municipio)         
+            elif q:
+                if q == '-1':
+                    municipio_statement = "SELECT municipios.id, municipios.nombre, departamentos.nombre FROM municipios inner join departamentos on departamentos.id = municipios.departamentos_id order by municipios.id asc limit 10"
+                    cur.execute(municipio_statement)
+                else:
+                    municipio_statement = "SELECT municipios.id, municipios.nombre, departamentos.nombre FROM municipios inner join departamentos on departamentos.id = municipios.departamentos_id where municipios.nombre like ? or municipios.descripcion like ? or departamentos.nombre like ?"
+                    cur.execute(municipio_statement, ['%'+q+'%','%'+q+'%','%'+q+'%'])
+                municipio_list = cur.fetchall()       
+                return jsonify(municipio_list)       
+        except:
+            return jsonify([{ 'status': 'error', 'message': 'No se pudo cargar el registro'}]),500
+        else:                      
+            cur.close()
+
+    elif request.method == 'PUT':
+        try:
+            con = connection()
+            cur = con.cursor()    
+            municipio_id = request.form['municipio_id']            
+            if int(municipio_id) > 0:
+                municipio_statement = "select * from municipios where id=?"
+                cur.execute(municipio_statement, [municipio_id])
+                municipio = cur.fetchone()    
+                if municipio:
+                    nombre_municipio = municipio[1] if municipio[1] == request.form['nombre_municipio'] else request.form['nombre_municipio'] 
+                    descripcion_municipio = municipio[2] if municipio[2] == request.form['descripcion_municipio'] else request.form['descripcion_municipio']    
+                    departamento_municipio = municipio[3] if municipio[3] == request.form['departamento_municipio'] else request.form['departamento_municipio']    
+                    municipio_update_statement = "UPDATE municipios SET nombre = ?, descripcion = ?, departamentos_id = ? WHERE id = ?" 
+                    cur.execute(municipio_update_statement, [nombre_municipio, descripcion_municipio, departamento_municipio, municipio_id])
+                else:
+                    raise Exception("No se pudo actualizar el registro")              
+        except:
+            return jsonify([{ 'status': 'error', 'message': 'No se pudo actualizar el registro'}]),501
+        else:    
+            con.commit()                  
+            cur.close() 
+            return jsonify([{ 'status': 'ok', 'message': 'El registro seleccionado fue actualizado'}])
 
 if __name__ == '__main__':
     app.run(debug=True)

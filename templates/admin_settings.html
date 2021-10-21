@@ -514,7 +514,128 @@
 
 
   </div>
-  <div class="tab-pane fade" id="nav-municipios" role="tabpanel" aria-labelledby="nav-municipios-tab">3</div>
+  <div class="tab-pane fade" id="nav-municipios" role="tabpanel" aria-labelledby="nav-municipios-tab">
+
+    <br/>
+    <h2>Configuración de municipios</h2>
+    <div class="nuevo-municipio">
+      <h3>Nuevo municipio</h3>
+      <form class="" method="POST" action="{{ url_for('admin_settings_municipios_add') }}" autocomplete="off" novalidate>
+        {{municipios_form.csrf_token }}
+        <div class="form-group">
+          {{municipios_form.nombre_municipio.label}} 
+          {{municipios_form.nombre_municipio}} 
+          </div>
+          <ul>
+      {%for error in municipios_form.nombre_municipio.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{municipios_form.descripcion_municipio.label}} 
+        {{municipios_form.descripcion_municipio}} 
+      </div>
+      <ul>
+      {%for error in municipios_form.descripcion_municipio.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+
+      <div class="form-group">
+        {{municipios_form.departamento_municipio.label}} 
+        {{municipios_form.departamento_municipio}} 
+      </div>
+      <ul>
+      {%for error in municipios_form_edit.departamento_municipio_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+    
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light">Guardar</button>
+      </form>
+    </div>
+    <div class="editar-municipio hide">
+      <h3>Editar municipio</h3>
+      <form class="" method="" action="" autocomplete="off" novalidate>
+        {{municipios_form_edit.csrf_token }}
+        <div class="form-group">
+          {{municipios_form_edit.nombre_municipio_edit.label}} 
+          {{municipios_form_edit.nombre_municipio_edit}} 
+          </div>
+          <ul>
+      {%for error in municipios_form_edit.nombre_municipio_edit.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{municipios_form_edit.descripcion_municipio_edit.label}} 
+        {{municipios_form_edit.descripcion_municipio_edit}} 
+      </div>
+      <ul>
+      {%for error in municipios_form_edit.descripcion_municipio_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+
+      <div class="form-group">
+        {{municipios_form_edit.departamento_municipio_edit.label}} 
+        {{municipios_form_edit.departamento_municipio_edit}} 
+      </div>
+      <ul>
+      {%for error in municipios_form_edit.departamento_municipio_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light" id="btn-edit-municipio">Guardar</button>
+      <a href="#" class="btn btn-lg btn-primary text-light" id="btn-cancelar-edit-municipio">Cancelar</a>
+
+      </form>
+    </div>
+    <br/>
+    <h3>Listado de municipios</h3>
+    <div class="buscar-municipio">
+      <form id="municipios_search_form">
+        <div class="form-group">
+            <label for="query_municipio">Buscar: </label> 
+            <input id="query_municipio" name="query_municipio" type="text" value=""> 
+            <button type="submit" class="btn btn-primary btn-sm text-light">Enviar</button>
+        </div>
+      </form>
+    </div>
+    <table class="table" id="municipios_table">
+      <tr>
+        <th>Id</th>
+        <th>Municipio</th>
+        <th>Departamento</th>
+        <th>Acciones</th>
+      </tr>
+      {% for municipio in municipios_list %}
+      <tr>
+        <td>{{ municipio.0 }}</td>
+        <td>{{ municipio.1 }}</td>
+        <td>{{ municipio.3 }}</td>
+        <td>
+          <a href="#" data-municipio="{{ municipio.0 }}" class="delete_municipio"><i class="fa fa-trash-o mr-2 text-secondary"></i></a>
+          <a href="#" data-municipio="{{ municipio.0 }}" class="edit_municipio"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a>
+        </td>
+      </tr>  
+      {% endfor %}
+    </table>
+
+    <table class="table hide" id="municipios_query_results">
+      <tr>
+        <th>Id</th>
+        <th>Municipio</th>
+        <th>Departamento</th>
+        <th>Acciones</th>
+      </tr>     
+    </table>
+
+
+    
+  </div>
   <div class="tab-pane fade" id="nav-estados-aeronave" role="tabpanel" aria-labelledby="nav-estados-aeronave-tab">3</div>
   <div class="tab-pane fade" id="nav-estados-piloto" role="tabpanel" aria-labelledby="nav-estados-piloto-tab">3</div>
   <div class="tab-pane fade" id="nav-estados-vuelo" role="tabpanel" aria-labelledby="nav-estados-vuelo-tab">3</div>

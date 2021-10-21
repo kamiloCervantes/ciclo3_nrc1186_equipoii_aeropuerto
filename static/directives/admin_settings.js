@@ -434,6 +434,116 @@ admin_settings.searchDepartamento = function(e){
 }
 
 
+/*
+* Municipios
+*/
+
+admin_settings.deleteMunicipio = function(e){
+    e.preventDefault();
+    var confirm_delete = confirm("¿Está seguro de eliminar el registro seleccionado?");
+
+    if(confirm_delete){
+        var self = $(this);
+        var municipio_id = self.data('municipio');
+        var jqxhr = $.ajax({
+            url: "/admin/settings/municipios?format=json",
+            method: 'DELETE',
+            data: {
+                municipio_id : municipio_id
+            }
+        });
+
+        jqxhr.done(function(data){
+            self.closest('tr').remove();
+        });
+    }
+}
+
+admin_settings.loadEditMunicipioForm = function(e){
+    e.preventDefault();
+    var self = $(this);
+    var municipio_id = self.data('municipio');
+    var jqxhr = $.ajax({
+        url: "/admin/settings/municipios?format=json",
+        method: 'GET',
+        data: {
+            municipio_id : municipio_id
+        }
+    });
+
+    jqxhr.done(function(data){
+        $('.editar-municipio form input').val('');
+        $('#btn-edit-municipio').data('municipio', data[0]);
+        $('#nombre_municipio_edit').val(data[1]);
+        $('#descripcion_municipio_edit').val(data[2]);
+        $('#departamento_municipio_edit').val(data[3]);
+
+        $('.nuevo-municipio').addClass('hide');
+        $('.editar-municipio').removeClass('hide');
+    });    
+}
+
+admin_settings.cancelEditMunicipioForm = function(e){
+    e.preventDefault();
+    $('.nuevo-municipio').removeClass('hide');
+    $('.editar-municipio').addClass('hide');
+}
+
+admin_settings.editMunicipio = function(e){
+    e.preventDefault();
+    var self = $(this);
+    var municipio_id = self.data('municipio');
+    var nombre_municipio = $('#nombre_municipio_edit').val();
+    var descripcion_municipio = $('#descripcion_municipio_edit').val();
+    var departamento_municipio = $('#departamento_municipio_edit').val();
+
+    var jqxhr = $.ajax({
+        url: "/admin/settings/municipios?format=json",
+        method: 'PUT',
+        data: {
+            municipio_id : municipio_id,
+            nombre_municipio : nombre_municipio,
+            descripcion_municipio : descripcion_municipio,
+            departamento_municipio : departamento_municipio
+        }
+    });
+
+    jqxhr.done(function(data){
+       location.reload();
+    });    
+}
+
+admin_settings.searchMunicipio = function(e){
+    e.preventDefault();
+    var self = $(this);
+    var q = $('#query_municipio').val() != '' ? $('#query_municipio').val() : '-1';
+
+    var jqxhr = $.ajax({
+        url: "/admin/settings/municipios?format=json",
+        method: 'GET',
+        data: {
+            q : q
+        }
+    });
+
+    jqxhr.done(function(data){
+        $("#municipios_query_results tr.municipio-results-item").remove();
+        if(data.length > 0){
+            $.each(data, function(index,value){
+                $("#municipios_query_results").append('<tr class="municipio-results-item"><td>'+value[0]+'</td><td>'+value[1]+'</td><td>'+(value[2])+'</td><td><a href="#" data-municipio="'+value[0]+'" class="delete_municipio"><i class="fa fa-trash-o mr-2 text-secondary"></i></a><a href="#" data-municipio="'+value[0]+'" class="edit_municipio"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a></td></tr>');
+            });
+        }
+        else{
+            $("#municipios_query_results").append('<tr class="municipio-results-item"><td colspan=4>No hay resultados</td></tr>');
+        }        
+        
+        $('#municipios_table').addClass('hide');
+        $('#municipios_query_results').removeClass('hide');
+    });   
+
+}
+
+
 admin_settings.init = function(){
     /*
     * Roles
@@ -467,6 +577,14 @@ admin_settings.init = function(){
     $('#btn-cancelar-edit-departamento').on('click', admin_settings.cancelEditDepartamentoForm);
     $('#btn-edit-departamento').on('click', admin_settings.editDepartamento);
     $('#departamentos_search_form').on('submit', admin_settings.searchDepartamento);
+     /*
+    * Municipios
+    */      
+    $('body').on('click','.delete_municipio', admin_settings.deleteMunicipio);
+    $('body').on('click', '.edit_municipio', admin_settings.loadEditMunicipioForm);
+    $('#btn-cancelar-edit-municipio').on('click', admin_settings.cancelEditMunicipioForm);
+    $('#btn-edit-municipio').on('click', admin_settings.editMunicipio);
+    $('#municipios_search_form').on('submit', admin_settings.searchMunicipio);
 }
 
 
