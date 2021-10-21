@@ -9,14 +9,23 @@
 {% block navbar_menu %}{% endblock %}
 {% block content %}
 <h5 class="card-title"><b>Añadir usuario</b></h5>
-<form class="" method="POST" action="{{ url_for('flights_add') }}" autocomplete="off" novalidate>
+<form class="" method="POST" action="{{ url_for('users_add') }}" autocomplete="off" novalidate>
   {{form.csrf_token }}
   <div class="form-group">
-     {{form.nombrecompleto.label}} 
-     {{form.nombrecompleto}} 
+     {{form.nombres.label}} 
+     {{form.nombres}} 
     </div>
     <ul>
-{%for error in form.nombrecompleto.errors %}
+{%for error in form.nombres.errors %}
+    <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+     {{form.apellidos.label}} 
+     {{form.apellidos}} 
+    </div>
+    <ul>
+{%for error in form.apellidos.errors %}
     <li style="color:red"> {{error}} </li>
 {%endfor %}
 </ul>
@@ -39,11 +48,29 @@
 {%endfor %}
 </ul>
 <div class="form-group">
+  {{form.fechanacimiento.label}} 
+  {{form.fechanacimiento}} 
+ </div>
+ <ul>
+{%for error in form.fechanacimiento.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
   {{form.correoelectronico.label}} 
   {{form.correoelectronico}} 
  </div>
  <ul>
 {%for error in form.correoelectronico.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.nrocelular.label}} 
+  {{form.nrocelular}} 
+ </div>
+ <ul>
+{%for error in form.nrocelular.errors %}
  <li style="color:red"> {{error}} </li>
 {%endfor %}
 </ul>
@@ -62,6 +89,15 @@
  </div>
  <ul>
 {%for error in form.password.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.rol.label}} 
+  {{form.rol}} 
+ </div>
+ <ul>
+{%for error in form.rol.errors %}
  <li style="color:red"> {{error}} </li>
 {%endfor %}
 </ul>

@@ -1,0 +1,164 @@
+{% extends "layout.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block menu %}
+  {{ super() }}
+{% endblock %}
+{% block navbar_menu %}{% endblock %}
+{% block content %}
+<h5 class="card-title"><b>Configuración del sistema</b></h5>
+<nav>
+  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+    <a class="nav-link active" id="nav-roles-tab" data-toggle="tab" href="#nav-roles" role="tab" aria-controls="nav-roles" aria-selected="true">Roles</a>
+    <a class="nav-link" id="nav-recursos-tab" data-toggle="tab" href="#nav-recursos" role="tab" aria-controls="nav-recursos" aria-selected="false">Recursos</a>
+    <a class="nav-link" id="nav-permisos-tab" data-toggle="tab" href="#nav-permisos" role="tab" aria-controls="nav-permisos" aria-selected="false">Permisos</a>
+    <a class="nav-link" id="nav-paises-tab" data-toggle="tab" href="#nav-paises" role="tab" aria-controls="nav-paises" aria-selected="false">Paises</a>
+    <a class="nav-link" id="nav-departamentos-tab" data-toggle="tab" href="#nav-departamentos" role="tab" aria-controls="nav-departamentos" aria-selected="false">Departamentos</a>
+    <a class="nav-link" id="nav-municipios-tab" data-toggle="tab" href="#nav-municipios" role="tab" aria-controls="nav-municipios" aria-selected="false">Municipios</a>
+    <a class="nav-link" id="nav-estados-aeronave-tab" data-toggle="tab" href="#nav-estados-aeronave" role="tab" aria-controls="nav-estados-aeronave" aria-selected="false">Estados aeronave</a>
+    <a class="nav-link" id="nav-estados-piloto-tab" data-toggle="tab" href="#nav-estados-piloto" role="tab" aria-controls="nav-estados-piloto" aria-selected="false">Estados piloto</a>
+    <a class="nav-link" id="nav-estados-vuelo-tab" data-toggle="tab" href="#nav-estados-vuelo" role="tab" aria-controls="nav-estados-vuelo" aria-selected="false">Estados vuelo</a>
+    <a class="nav-link" id="nav-tipos-documento-tab" data-toggle="tab" href="#nav-tipos-documento" role="tab" aria-controls="nav-tipos-documento" aria-selected="false">Tipos de documentos</a>
+    <a class="nav-link" id="nav-tipos-ruta-tab" data-toggle="tab" href="#nav-tipos-ruta" role="tab" aria-controls="nav-tipos-ruta" aria-selected="false">Tipos de ruta</a>
+  </div>
+</nav>
+<div class="tab-content" id="nav-tabContent">
+  <div class="tab-pane fade show active" id="nav-roles" role="tabpanel" aria-labelledby="nav-roles-tab">
+    <br/>
+    <h2>Configuración de roles</h2>
+    <div class="nuevo-rol">
+      <h3>Nuevo rol</h3>
+      <form class="" method="POST" action="{{ url_for('admin_settings_roles_add') }}" autocomplete="off" novalidate>
+        {{roles_form.csrf_token }}
+        <div class="form-group">
+          {{roles_form.nombre_rol.label}} 
+          {{roles_form.nombre_rol}} 
+          </div>
+          <ul>
+      {%for error in roles_form.nombre_rol.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{roles_form.descripcion.label}} 
+        {{roles_form.descripcion}} 
+      </div>
+      <ul>
+      {%for error in roles_form.descripcion.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{roles_form.homepage.label}} 
+        {{roles_form.homepage}} 
+      </div>
+      <ul>
+      {%for error in roles_form.homepage.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light">Guardar</button>
+      </form>
+    </div>
+    <div class="editar-rol hide">
+      <h3>Editar rol</h3>
+      <form class="" method="" action="" autocomplete="off" novalidate>
+        {{roles_form_edit.csrf_token }}
+        <div class="form-group">
+          {{roles_form_edit.nombre_rol_edit.label}} 
+          {{roles_form_edit.nombre_rol_edit}} 
+          </div>
+          <ul>
+      {%for error in roles_form_edit.nombre_rol_edit.errors %}
+          <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{roles_form_edit.descripcion_edit.label}} 
+        {{roles_form_edit.descripcion_edit}} 
+      </div>
+      <ul>
+      {%for error in roles_form_edit.descripcion_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      <div class="form-group">
+        {{roles_form_edit.homepage_edit.label}} 
+        {{roles_form_edit.homepage_edit}} 
+      </div>
+      <ul>
+      {%for error in roles_form_edit.homepage_edit.errors %}
+      <li style="color:red"> {{error}} </li>
+      {%endfor %}
+      </ul>
+      
+      <button type="submit" class="btn btn-lg btn-primary text-light" id="btn-edit-rol">Guardar</button>
+      <a href="#" class="btn btn-lg btn-primary text-light" id="btn-cancelar-edit-rol">Cancelar</a>
+
+      </form>
+    </div>
+    <br/>
+    <h3>Listado de roles</h3>
+    <div class="buscar-rol">
+      <form id="roles_search_form">
+        <div class="form-group">
+            <label for="query_rol">Buscar: </label> 
+            <input id="query_rol" name="query_rol" required="" type="text" value=""> 
+            <button type="submit" class="btn btn-primary btn-sm text-light">Enviar</button>
+        </div>
+      </form>
+    </div>
+    <table class="table" id="roles_table">
+      <tr>
+        <th>Id</th>
+        <th>Rol</th>
+        <th>Descripción</th>
+        <th>Home</th>
+        <th>Acciones</th>
+      </tr>
+      {% for rol in roles_list %}
+      <tr>
+        <td>{{ rol.0 }}</td>
+        <td>{{ rol.1 }}</td>
+        <td>{{ rol.2 }}</td>
+        <td>{{ rol.3 }}</td>
+        <td>
+          <a href="#" data-rol="{{ rol.0 }}" class="delete_rol"><i class="fa fa-trash-o mr-2 text-secondary"></i></a>
+          <a href="#" data-rol="{{ rol.0 }}" class="edit_rol"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a>
+        </td>
+      </tr>  
+      {% endfor %}
+    </table>
+
+    <table class="table hide" id="roles_query_results">
+      <tr>
+        <th>Id</th>
+        <th>Rol</th>
+        <th>Descripción</th>
+        <th>Home</th>
+        <th>Acciones</th>
+      </tr>     
+    </table>
+  </div>
+  <div class="tab-pane fade" id="nav-recursos" role="tabpanel" aria-labelledby="nav-recursos-tab">2</div>
+  <div class="tab-pane fade" id="nav-permisos" role="tabpanel" aria-labelledby="nav-permisos-tab">3</div>
+  <div class="tab-pane fade" id="nav-paises" role="tabpanel" aria-labelledby="nav-paises-tab">3</div>
+  <div class="tab-pane fade" id="nav-departamentos" role="tabpanel" aria-labelledby="nav-departamentos-tab">3</div>
+  <div class="tab-pane fade" id="nav-municipios" role="tabpanel" aria-labelledby="nav-municipios-tab">3</div>
+  <div class="tab-pane fade" id="nav-estados-aeronave" role="tabpanel" aria-labelledby="nav-estados-aeronave-tab">3</div>
+  <div class="tab-pane fade" id="nav-estados-piloto" role="tabpanel" aria-labelledby="nav-estados-piloto-tab">3</div>
+  <div class="tab-pane fade" id="nav-estados-vuelo" role="tabpanel" aria-labelledby="nav-estados-vuelo-tab">3</div>
+  <div class="tab-pane fade" id="nav-tipos-documento" role="tabpanel" aria-labelledby="nav-tipos-documento-tab">3</div>
+  <div class="tab-pane fade" id="nav-tipos-ruta" role="tabpanel" aria-labelledby="nav-tipos-ruta-tab">3</div>
+</div>
+
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='directives/admin_settings.js') }}" type="text/javascript"></script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "layout_auth.html" %}
+{% block title %}Iniciar sesión{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+<div class="row"> 
+<div class="col-md-4" style=""><img class="img-fluid d-block" src="{{ url_for('static', filename='logo.svg') }}"></div>
+<div class="col-md-8" style="">
+<h1 class="">Seleccionar rol</h1>
+<form class="" method="POST" action="{{ url_for('roles_selector') }}" autocomplete="off" novalidate>
+    <div>
+    {%for rol in roles %}
+        <input type="radio" name="rol" value="{{ rol.0 }}"> {{ rol.1 }} <br/>
+    {%endfor %}
+    </div>
+    <br/>
+  <button type="submit" class="btn btn-lg btn-primary text-light">Submit</button>
+</form>
+</div>
+</div>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}
