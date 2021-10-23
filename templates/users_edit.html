@@ -9,41 +9,14 @@
 {% block navbar_menu %}{% endblock %}
 {% block content %}
 <h5 class="card-title"><b>Editar usuario</b></h5>
-<form class="" method="POST" action="{{ url_for('users_edit', username=username) }}" autocomplete="off" novalidate>
+<form class="" method="POST" action="{{ url_for('users_edit', user_id=user_id) }}" autocomplete="off" novalidate>
   {{form.csrf_token }}
   <div class="form-group">
-     {{form.nombrecompleto.label}} 
-     {{form.nombrecompleto}} 
-    </div>
-    <ul>
-{%for error in form.nombrecompleto.errors %}
-    <li style="color:red"> {{error}} </li>
-{%endfor %}
-</ul>
-<div class="form-group">
-  {{form.tipodocumento.label}} 
-  {{form.tipodocumento}} 
+  {{form.username.label}} 
+  {{form.username}} 
  </div>
  <ul>
-{%for error in form.tipodocumento.errors %}
- <li style="color:red"> {{error}} </li>
-{%endfor %}
-</ul>
-<div class="form-group">
-  {{form.numdocumento.label}} 
-  {{form.numdocumento}} 
- </div>
- <ul>
-{%for error in form.numdocumento.errors %}
- <li style="color:red"> {{error}} </li>
-{%endfor %}
-</ul>
-<div class="form-group">
-  {{form.correoelectronico.label}} 
-  {{form.correoelectronico}} 
- </div>
- <ul>
-{%for error in form.correoelectronico.errors %}
+{%for error in form.username.errors %}
  <li style="color:red"> {{error}} </li>
 {%endfor %}
 </ul>

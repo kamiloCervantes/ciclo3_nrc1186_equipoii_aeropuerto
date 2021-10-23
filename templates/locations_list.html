@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block menu %}
+  {{ super() }}
+{% endblock %}
+{% block navbar_menu %}{% endblock %}
+{% block content %}
+<h5 class="card-title"><b>Destinos</b>  <a href="{{ url_for('locations_add') }}" class="btn btn-sm btn-primary text-light"><i class="fa fa-plus-square mr-2 text-light"></i>Nuevo destino</a></h5>
+
+<table class="table">
+  <tr>
+    <th>Id</th>
+    <th>Aeropuerto</th>
+    <th>Sigla</th>
+    <th>Ubicación</th>
+    <th>Acciones</th>
+  </tr>
+  {% for location in locations %}
+  <tr>
+    <td>{{ location.0 }}</td>
+    <td>{{ location.1 }}</td>
+    <td>{{ location.2 }}</td>
+    <td>{{ location.3 }}, {{ location.4 }}, {{ location.5}}</td>
+    <td>
+      <a href="{{ url_for('locations_edit', location_id=location.0) }}"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a>
+      <a href="#" class="delete_location" data-location="{{ location.0 }}" ><i class="fa fa-trash-o mr-2 text-secondary"></i></a>
+    </td>
+  </tr>  
+  {% endfor %}
+</table>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='directives/admin_locations.js') }}" type="text/javascript"></script>
+{% endblock %}

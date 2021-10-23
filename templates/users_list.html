@@ -8,21 +8,21 @@
 {% endblock %}
 {% block navbar_menu %}{% endblock %}
 {% block content %}
-<h5 class="card-title"><b>Usuarios</b></h5>
+<h5 class="card-title"><b>Usuarios</b> <a href="{{ url_for('users_add') }}" class="btn btn-sm btn-primary text-light"><i class="fa fa-plus-square mr-2 text-light"></i>Nuevo usuario</a></h5>
 <table class="table">
   <tr>
+    <th>Id</th>
     <th>Nombre de usuario</th>
-    <th>Nombre completo</th>
-    <th>Email</th>
+    <th>Roles</th>
   </tr>
-  {% for usuario in usuarios %}
+  {% for user in users %}
   <tr>
-    <td>{{ usuario.username }}</td>
-    <td>{{ usuario.name }}</td>
-    <td>{{ usuario.email }}</td>
+    <td>{{ user.0 }}</td>
+    <td>{{ user.1 }}</td>
+    <td>{{ user.2 }}</td>
     <td>
-      <a href="{{ url_for('users_edit', username=usuario.username) }}"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a>
-      <a href="#"><i class="fa fa-pencil-trash-o mr-2 text-secondary"></i></a>
+      <a href="{{ url_for('users_edit', user_id=user.0) }}"><i class="fa fa-pencil-square-o mr-2 text-secondary"></i></a>
+      <a href="#" class="delete_user" data-user="{{ user.0 }}"><i class="fa fa-trash-o mr-2 text-secondary"></i></a>
     </td>
   </tr>  
   {% endfor %}
@@ -30,4 +30,7 @@
 {% endblock %}
 {% block footer %}
   {{ super() }}
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='directives/admin_users.js') }}" type="text/javascript"></script>
 {% endblock %}

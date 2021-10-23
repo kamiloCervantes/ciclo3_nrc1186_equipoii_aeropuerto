@@ -8,14 +8,14 @@
 {% endblock %}
 {% block navbar_menu %}{% endblock %}
 {% block content %}
-<h5 class="card-title"><b>Añadir destino</b></h5>
-{% if request.args.error_message: %}
+<h5 class="card-title"><b>Editar destino</b></h5>
+{% if error_message: %}
 <div class="alert alert-danger" role="alert">
   <p>Se encontraron los siguientes errores:</p>
-  {{ request.args.error_message }}
+  {{ error_message }}
 </div>
 {% endif %}
-<form class="" method="POST" action="{{ url_for('locations_add') }}" autocomplete="off" novalidate>
+<form class="" method="POST" action="{{ url_for('locations_edit', location_id=location_id) }}" autocomplete="off" novalidate>
   {{form.csrf_token }}
   <div class="form-group">
      {{form.nombreaeropuerto.label}} 
