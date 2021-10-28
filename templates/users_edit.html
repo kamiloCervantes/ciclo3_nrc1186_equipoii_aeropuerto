@@ -12,11 +12,74 @@
 <form class="" method="POST" action="{{ url_for('users_edit', user_id=user_id) }}" autocomplete="off" novalidate>
   {{form.csrf_token }}
   <div class="form-group">
-  {{form.username.label}} 
-  {{form.username}} 
+     {{form.nombres_users_edit.label}} 
+     {{form.nombres_users_edit}} 
+    </div>
+    <ul>
+{%for error in form.nombres_users_edit.errors %}
+    <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+     {{form.apellidos_users_edit.label}} 
+     {{form.apellidos_users_edit}} 
+    </div>
+    <ul>
+{%for error in form.apellidos_users_edit.errors %}
+    <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.tipodocumento_users_edit.label}} 
+  {{form.tipodocumento_users_edit}} 
  </div>
  <ul>
-{%for error in form.username.errors %}
+{%for error in form.tipodocumento_users_edit.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.numdocumento_users_edit.label}} 
+  {{form.numdocumento_users_edit}} 
+ </div>
+ <ul>
+{%for error in form.numdocumento_users_edit.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.fechanacimiento_users_edit.label}} 
+  {{form.fechanacimiento_users_edit}} 
+ </div>
+ <ul>
+{%for error in form.fechanacimiento_users_edit.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.correoelectronico_users_edit.label}} 
+  {{form.correoelectronico_users_edit}} 
+ </div>
+ <ul>
+{%for error in form.correoelectronico_users_edit.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.nrocelular_users_edit.label}} 
+  {{form.nrocelular_users_edit}} 
+ </div>
+ <ul>
+{%for error in form.nrocelular_users_edit.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.username_users_edit.label}} 
+  {{form.username_users_edit}} 
+ </div>
+ <ul>
+{%for error in form.username_users_edit.errors %}
  <li style="color:red"> {{error}} </li>
 {%endfor %}
 </ul>

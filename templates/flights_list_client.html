@@ -1,0 +1,46 @@
+{% extends "layout_client.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block menu %}
+  {{ super() }}
+{% endblock %}
+{% block navbar_menu %}{% endblock %}
+{% block content %}
+<h2 class="card-title"><b>Reserva tu vuelo</b></h2>
+  <hr>
+  <div class="flights">
+  {% for flight in flights %}
+  <div class="flight-item">
+  <table>
+  <tr>
+  <td><p><b>Vuelo {{ flight.0 }}, Trayecto {{ flight.4 }}</b></p></td>
+  <td><p><b>Aeronave {{ flight.14 }}</b></p></td>
+  <tr>
+  <tr>
+  <td><p>Origen</p><h3>Aeropuerto {{ flight.6 }} ({{ flight.5 }})</h3><p>{{ flight.7 }}, {{ flight.8 }}</p></td>
+  <td>&nbsp;</td>
+  <td><p>Destino</p><h3>Aeropuerto {{ flight.10 }} ({{ flight.9 }})</h3><p>{{ flight.11 }}, {{ flight.12 }}</p></td>
+  <tr>
+  <tr>
+  <td><p>Fecha y hora</p><h3>{{ flight.15 }}</h3></td>
+  <td>&nbsp;</td>
+  <td><p><b>Piloto:</b> </p><h3>{{ flight.1 }} {{ flight.2 }}</h3></td>
+  <tr>
+  </table>
+  <div class="actions">
+    <a href="{{ url_for('client_flights_reservacion') }}" class="btn btn-sm btn-primary text-light">Reservar</a>
+  </div>
+  <hr/>
+  </div> 
+  {% endfor %}
+  </div>
+
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='directives/admin_users.js') }}" type="text/javascript"></script>
+{% endblock %}

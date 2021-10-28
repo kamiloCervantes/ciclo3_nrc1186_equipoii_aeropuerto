@@ -4,9 +4,10 @@ from flask import redirect
 from flask import session
 from flask import request
 from flask import jsonify
+from datetime import datetime, date
 from flask.helpers import url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, DateField
+from wtforms import StringField, PasswordField, SelectField, DateField, DateTimeField
 from wtforms.validators import AnyOf, InputRequired, Length, Email, EqualTo, NumberRange
 import sqlite3
 import hashlib
@@ -18,13 +19,21 @@ def connection():
     con = sqlite3.connect("myflight.sqlite")
     return con
 
+def activate_foreign_keys_check(cur):
+    pragma_statement = "PRAGMA foreign_keys = ON"
+    cur.execute(pragma_statement)
+    pragma_test = "PRAGMA foreign_keys"
+    cur.execute(pragma_test)
+    pragma = cur.fetchone()
+    print(pragma) 
+
 class login_form(FlaskForm):
     username = StringField('username', validators=[InputRequired(message='El usuario es requerido'), Length(min=5, max=10, message='El usuario debe tener entre 5 y 10 caracteres')])
     password = PasswordField('password', validators=[InputRequired('Contraseña es requerida')])
 
 @app.route("/")
 @app.route("/home")
-def home():
+def home(): 
     return redirect(url_for('login'))
 
 
@@ -53,7 +62,7 @@ def login():
             elif usuario[0][2] == 'piloto':
                 return redirect(url_for('pilot_dashboard'))
             elif usuario[0][2] == 'cliente':
-                return redirect(url_for('client_flights'))
+                return redirect(url_for('client_flights_list'))
             else:
                 return redirect(url_for('login'))
         elif len(usuario) > 1:
@@ -102,18 +111,68 @@ def admin_dashboard():
 
 class flights_add_form(FlaskForm):
     codigovuelo = StringField(u'Código de vuelo', validators=[InputRequired(message='El código de vuelo es requerido'), Length(min=5, max=50, message='El código de vuelo debe tener entre 5 y 50 caracteres')])
-    aeronave = SelectField(u'Aeronave', choices=[('1', 'Aeronave 1'), ('2', 'Aeronave 2'), ('3', 'Aeronave 3')])
-    piloto = SelectField(u'Piloto', choices=[('1', 'Piloto 1'), ('2', 'Piloto 2'), ('3', 'Piloto 3')])
-    capacidad = StringField(u'Capacidad', validators=[InputRequired(message='Ingrese la capacidad de personas para este vuelo'), NumberRange(min=0, max=1000, message='La capacidad no puede ser mayor que %(max)s')])
-    piloto = SelectField(u'Ruta', choices=[('1', 'Ruta 1'), ('2', 'Ruta 2'), ('3', 'Ruta 3')])
+    aeronave = SelectField(u'Aeronave',   coerce=int, validate_choice=False)
+    piloto = SelectField(u'Piloto',  coerce=int, validate_choice=False)
+    capacidad = StringField(u'Capacidad', validators=[InputRequired(message='Ingrese la capacidad de personas para este vuelo')])
+    ruta = SelectField(u'Ruta',  coerce=int, validate_choice=False)
+    fechavuelo = DateTimeField('Fecha y hora vuelo', format="%Y-%m-%d %H:%M:%S")
+
 
    
 @app.route("/admin/flights/add", methods=['GET','POST'])
 def flights_add():
+    con = connection()
+    cur = con.cursor()
     form = flights_add_form()
+    #choice queries
+    aeronaves_choice_statement = "SELECT id, codigo_aeronave from aeronaves"
+    cur.execute(aeronaves_choice_statement)
+    aeronaves_list = cur.fetchall()
+    pilotos_choice_statement = "SELECT pilotos.id, personas.nombres || ' ' || personas.apellidos from pilotos inner join personas on personas.id = pilotos.personas_id"
+    cur.execute(pilotos_choice_statement)
+    pilotos_list = cur.fetchall()
+    rutas_choice_statement = "SELECT id, nombre_ruta from rutas"
+    cur.execute(rutas_choice_statement)
+    rutas_list = cur.fetchall()
+    #setting choices    
+    form.aeronave.choices = aeronaves_list
+    form.piloto.choices = pilotos_list
+    form.ruta.choices = rutas_list
     if form.validate_on_submit():
-        return redirect(url_for('admin_dashboard'))
+        try:
+            vuelos_statement = "INSERT INTO vuelos (codigo_vuelo,pilotos_id,capacidad,rutas_id,aeronaves_id,estados_vuelo_id,fecha_vuelo) VALUES (?,?,?,?,?,4,?);"
+            cur.execute(vuelos_statement, [form.codigovuelo.data, form.piloto.data, int(form.capacidad.data), form.ruta.data, form.aeronave.data, form.fechavuelo.data])
+        except:
+            return redirect(url_for('flights_add', error_message="No se pudo guardar el registro en la BD"))
+        else:
+            con.commit()
+            cur.close()
+            return redirect(url_for('flights_list'))
     return render_template('flights_add.html', form=form)
+
+@app.route("/admin/flights/list", methods=['GET'])
+def flights_list():
+    con = connection()
+    cur = con.cursor()
+    flights_statement = "SELECT vuelos.codigo_vuelo, persona_piloto.nombres, persona_piloto.apellidos, vuelos.capacidad, rutas.nombre_ruta, destino_salida.sigla_aeropuerto, destino_salida.nombre_aeropuerto, municipio_salida.nombre, departamento_salida.nombre, destino_llegada.sigla_aeropuerto, destino_llegada.nombre_aeropuerto, municipio_llegada.nombre, departamento_llegada.nombre, estados_vuelo.estado_vuelo, aeronaves.codigo_aeronave, vuelos.fecha_vuelo from vuelos inner join pilotos on pilotos.id = vuelos.pilotos_id inner join personas as persona_piloto on persona_piloto.id = pilotos.personas_id inner join rutas on rutas.id = vuelos.rutas_id inner join destinos as destino_salida on destino_salida.id = rutas.destino_salida_id inner join municipios as municipio_salida on municipio_salida.id = destino_salida.municipios_id inner join departamentos as departamento_salida on departamento_salida.id = municipio_salida.departamentos_id inner join destinos as destino_llegada on destino_llegada.id = rutas.destino_llegada_id inner join municipios as municipio_llegada on municipio_llegada.id = destino_llegada.municipios_id inner join departamentos as departamento_llegada on departamento_llegada.id = municipio_llegada.departamentos_id inner join estados_vuelo on estados_vuelo.id = vuelos.estados_vuelo_id inner join aeronaves on aeronaves.id = vuelos.aeronaves_id"
+    cur.execute(flights_statement)
+    flights = cur.fetchall()
+    print(flights)
+    return render_template('flights_list.html', flights=flights)
+
+@app.route("/client/flights/list", methods=['GET'])
+def client_flights_list():
+    con = connection()
+    cur = con.cursor()
+    flights_statement = "SELECT vuelos.codigo_vuelo, persona_piloto.nombres, persona_piloto.apellidos, vuelos.capacidad, rutas.nombre_ruta, destino_salida.sigla_aeropuerto, destino_salida.nombre_aeropuerto, municipio_salida.nombre, departamento_salida.nombre, destino_llegada.sigla_aeropuerto, destino_llegada.nombre_aeropuerto, municipio_llegada.nombre, departamento_llegada.nombre, estados_vuelo.estado_vuelo, aeronaves.codigo_aeronave, vuelos.fecha_vuelo from vuelos inner join pilotos on pilotos.id = vuelos.pilotos_id inner join personas as persona_piloto on persona_piloto.id = pilotos.personas_id inner join rutas on rutas.id = vuelos.rutas_id inner join destinos as destino_salida on destino_salida.id = rutas.destino_salida_id inner join municipios as municipio_salida on municipio_salida.id = destino_salida.municipios_id inner join departamentos as departamento_salida on departamento_salida.id = municipio_salida.departamentos_id inner join destinos as destino_llegada on destino_llegada.id = rutas.destino_llegada_id inner join municipios as municipio_llegada on municipio_llegada.id = destino_llegada.municipios_id inner join departamentos as departamento_llegada on departamento_llegada.id = municipio_llegada.departamentos_id inner join estados_vuelo on estados_vuelo.id = vuelos.estados_vuelo_id inner join aeronaves on aeronaves.id = vuelos.aeronaves_id"
+    cur.execute(flights_statement)
+    flights = cur.fetchall()
+    print(flights)
+    return render_template('flights_list_client.html', flights=flights)
+
+@app.route("/client/flights/reservar", methods=['GET'])
+def client_flights_reservacion():
+    return render_template('flights_reserva_client.html')
 
 class planes_add_form(FlaskForm):
     codigoaeronave = StringField(u'Código de aeronave', validators=[InputRequired(message='El código de aeronave es requerido'), Length(min=5, max=50, message='El código de aeronave debe tener entre 5 y 50 caracteres')])
@@ -280,16 +339,16 @@ class users_form(FlaskForm):
     rol = SelectField(u'Rol', coerce=int, validate_choice=False)
 
 class users_form_edit(FlaskForm):
-    username = StringField('username', validators=[InputRequired(message='El usuario es requerido'), Length(min=5, max=40, message='El usuario debe tener entre 5 y 10 caracteres')])
-    # nombres = StringField('Nombres', validators=[InputRequired(message='El nombre es requerido'), Length(min=5, max=50, message='El nombre debe tener entre 5 y 50 caracteres')])
-    # apellidos = StringField('Apellidos', validators=[InputRequired(message='El apellido es requerido'), Length(min=5, max=50, message='El apellido debe tener entre 5 y 50 caracteres')])
-    # tipodocumento = SelectField(u'Tipo de documento', coerce=int, validate_choice=False)
-    # numdocumento = StringField('Documento de identidad', validators=[InputRequired(message='El número de documento es requerido'), Length(min=5, max=50, message='El nombre debe tener entre 5 y 50 caracteres')])
-    # fechanacimiento = DateField('Fecha de nacimiento')
-    # correoelectronico = StringField('Email', validators=[InputRequired(message='El email es requerido'), Length(min=5, max=50, message='El email debe tener entre 5 y 50 caracteres'), Email(message='Debe ingresar un email valido')])
-    # nrocelular = StringField('Celular', validators=[Length(min=10, max=10, message='El celular debe tener 10 caracteres')])
+    username_users_edit = StringField('username', validators=[InputRequired(message='El usuario es requerido'), Length(min=5, max=40, message='El usuario debe tener entre 5 y 10 caracteres')])
+    nombres_users_edit = StringField('Nombres', validators=[InputRequired(message='El nombre es requerido'), Length(min=5, max=50, message='El nombre debe tener entre 5 y 50 caracteres')])
+    apellidos_users_edit = StringField('Apellidos', validators=[InputRequired(message='El apellido es requerido'), Length(min=5, max=50, message='El apellido debe tener entre 5 y 50 caracteres')])
+    tipodocumento_users_edit = SelectField(u'Tipo de documento', coerce=int, validate_choice=False)
+    numdocumento_users_edit = StringField('Documento de identidad', validators=[InputRequired(message='El número de documento es requerido'), Length(min=5, max=50, message='El nombre debe tener entre 5 y 50 caracteres')])
+    fechanacimiento_users_edit = DateField('Fecha de nacimiento', format="%Y-%m-%d")
+    correoelectronico_users_edit = StringField('Email', validators=[InputRequired(message='El email es requerido'), Length(min=5, max=50, message='El email debe tener entre 5 y 50 caracteres'), Email(message='Debe ingresar un email valido')])
+    nrocelular_users_edit = StringField('Celular', validators=[Length(min=10, max=10, message='El celular debe tener 10 caracteres')])
     # password = PasswordField('password', validators=[])
-    # rol = SelectField(u'Rol', coerce=int, validate_choice=False)
+
 
 @app.route("/admin/users/add", methods=['GET','POST'])
 def users_add():
@@ -328,16 +387,27 @@ def users_edit(user_id):
     form = users_form_edit()
     con = connection()
     cur = con.cursor()
-    user_statement = "SELECT usuarios.id, usuarios.username, usuarios.password, usuarios.email FROM usuarios where usuarios.id=?"
+    tipodoc_statement = "SELECT id,tipo_documento_opcion FROM opciones_tipo_documento where visible=1"
+    cur.execute(tipodoc_statement)
+    tipodocumento_list = cur.fetchall()
+    form.tipodocumento_users_edit.choices = tipodocumento_list
+    user_statement = "SELECT usuarios.id, usuarios.username, usuarios.password, usuarios.email, personas.nombres, personas.apellidos, personas.fecha_nacimiento, personas.num_documento, personas.nro_celular, personas.opciones_tipo_documento_id FROM usuarios inner join personas on personas.id = usuarios.personas_id  where usuarios.id=?"
     cur.execute(user_statement, [user_id])
     user = cur.fetchone()
     if not user:
         return redirect(url_for('users_list'))
     else:
-        form.username.data = user[1]  
+        form.nombres_users_edit.data = user[4] 
+        form.apellidos_users_edit.data = user[5]        
+        form.tipodocumento_users_edit.data = user[9]
+        form.numdocumento_users_edit.data = user[7]  
+        form.fechanacimiento_users_edit.data = datetime.strptime(user[6], '%Y-%m-%d')
+        form.correoelectronico_users_edit.data = user[3]  
+        form.username_users_edit.data = user[1] 
+        form.nrocelular_users_edit.data = user[8]
     print(form.validate_on_submit())
     if form.validate_on_submit():
-        username = user[1] if user[1] == request.form['username'] else request.form['username']
+        username = user[1] if user[1] == request.form['username_users_edit'] else request.form['username_users_edit']
         usuario_statement = "UPDATE usuarios SET username = ?,  activo = ? WHERE id = ? "
         cur.execute(usuario_statement, [username, '1', user[0]])      
         cur.close()
@@ -349,7 +419,7 @@ def users_edit(user_id):
 def users_list():
     con = connection()
     cur = con.cursor()
-    users_statement = "SELECT usuarios.id, usuarios.username, group_concat(roles.nombre_rol) from usuarios inner join usuarios_has_roles on usuarios.id = usuarios_has_roles.usuarios_id inner join roles on roles.id = usuarios_has_roles.roles_id group by usuarios.id order by usuarios.id asc limit 10"
+    users_statement = "SELECT usuarios.id, usuarios.username, group_concat(roles.nombre_rol) from usuarios inner join usuarios_has_roles on usuarios.id = usuarios_has_roles.usuarios_id inner join roles on roles.id = usuarios_has_roles.roles_id group by usuarios.id order by usuarios.id asc limit 20"
     cur.execute(users_statement)
     users = cur.fetchall()
     return render_template('users_list.html', users=users)
@@ -446,7 +516,7 @@ def roles_selector():
             elif role == 'piloto':
                 return redirect(url_for('pilot_dashboard'))
             elif role == 'cliente':
-                return redirect(url_for('client_flights'))
+                return redirect(url_for('client_flights_list'))
             else:
                 return redirect(url_for('login'))
         else:
@@ -527,7 +597,7 @@ def admin_settings():
     rol_statement = "SELECT roles.id, roles.nombre_rol, roles.descripcion, recursos.ruta_relativa FROM roles left join recursos on recursos.id = roles.homepage ORDER BY roles.id ASC LIMIT 10"
     cur.execute(rol_statement)
     roles = cur.fetchall()    
-    recursos_statement = "select recursos.id, recursos.nombre_recurso, recursos.descripcion, recursos.codigo_recurso, recursos.ruta_relativa from recursos order by id limit 10"
+    recursos_statement = "select recursos.id, recursos.nombre_recurso, recursos.descripcion, recursos.codigo_recurso, recursos.ruta_relativa from recursos order by id limit 20"
     cur.execute(recursos_statement)
     recursos_list = cur.fetchall() 
     paises_statement = "select paises.id, paises.nombre, paises.descripcion from paises order by id limit 10"
@@ -675,11 +745,12 @@ def admin_settings_roles_rest_resource():
     if request.method == 'DELETE':
         try:
             con = connection()
-            cur = con.cursor()        
+            cur = con.cursor()  
+            activate_foreign_keys_check(cur)    
             rol_id = request.form['rol_id']
             rol_statement = "delete from roles where id=?"
             cur.execute(rol_statement, [rol_id])       
-            #con.commit()                
+            con.commit()                
         except:
             return jsonify([{ 'status': 'error', 'message': 'No se pudo eliminar el registro'}]),501
         else:                      
@@ -1004,6 +1075,9 @@ def admin_settings_municipios_rest_resource():
             con.commit()                  
             cur.close() 
             return jsonify([{ 'status': 'ok', 'message': 'El registro seleccionado fue actualizado'}])
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

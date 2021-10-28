@@ -48,11 +48,21 @@
 {%endfor %}
 </ul>
 <div class="form-group">
-  {{form.piloto.label}} 
-  {{form.piloto}} 
+  {{form.ruta.label}} 
+  {{form.ruta}} 
  </div>
  <ul>
-{%for error in form.piloto.errors %}
+{%for error in form.ruta.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+
+<div class="form-group">
+  {{form.fechavuelo.label}} 
+  {{form.fechavuelo}} 
+ </div>
+ <ul>
+{%for error in form.fechavuelo.errors %}
  <li style="color:red"> {{error}} </li>
 {%endfor %}
 </ul>

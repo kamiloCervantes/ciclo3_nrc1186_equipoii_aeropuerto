@@ -22,6 +22,10 @@ admin_settings.deleteRol = function(e){
         jqxhr.done(function(data){
             self.closest('tr').remove();
         });
+
+        jqxhr.fail(function(error){
+            console.log(error);
+        });
     }
 }
 

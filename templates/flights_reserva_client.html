@@ -1,0 +1,22 @@
+{% extends "layout_client.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block menu %}
+  {{ super() }}
+{% endblock %}
+{% block navbar_menu %}{% endblock %}
+{% block content %}
+<h2 class="card-title"><b>Reserva Exitosa!</b></h2>
+  <hr>
+  <p>Tu vuelo ha sido reservado de forma exitosa, que tengas feliz viaje !</p>
+  <a href="{{ url_for('client_flights_list') }}" class="btn btn-sm btn-primary text-light">Volver</a>
+
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='directives/admin_users.js') }}" type="text/javascript"></script>
+{% endblock %}
