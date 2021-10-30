@@ -8,10 +8,9 @@
 {% endblock %}
 {% block navbar_menu %}{% endblock %}
 {% block content %}
-<h2 class="card-title"><b>Reserva tu vuelo</b></h2>
+<h2 class="card-title"><b>Detalle de reserva {{ flight.18 }}</b></h2>
   <hr>
   <div class="flights">
-  {% for flight in flights %}
   <div class="flight-item">
   <table>
   <tr>
@@ -28,19 +27,28 @@
   <td>&nbsp;</td>
   <td><p><b>Piloto:</b> </p><h3>{{ flight.1 }} {{ flight.2 }}</h3></td>
   <tr>
+  <tr>
+  <td><p>Pasajero</p><h3>{{ flight.20 }} {{ flight.21 }}</h3></td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+  <tr>
   </table>
-  {% if flight.16: %}
-   <div class="actions">
-    <a href="{{ url_for('client_reservas_detalle', reserva_id=flight.16) }}" class="btn btn-sm btn-primary text-light">Ver reserva</a>
+  
+  <a href="{{ url_for('client_flights_retroalimentar', vuelo_id=flight.26) }}" class="btn btn-sm btn-primary text-light">Retroalimentar vuelo</a>
+  <a href="{{ url_for('client_flights_list') }}" class="btn btn-sm btn-primary text-light">Volver</a>
+  <hr/>
+  <h2>Calificaciones de usuarios</h2>
+  {% for retro in retroalimentaciones %}
+  <div>
+    <hr style="border: 1px solid #000" />
+    <p>Por {{ retro.7 }} {{ retro.8 }}</p>
+    <h3>{{ retro.1 }}</h3>
+    <p>Puntuacion: {{ retro.2 }}
   </div>
-  {% else: %}
-   <div class="actions">
-    <a href="{{ url_for('client_flights_reservacion', vuelo_id=flight.17) }}" class="btn btn-sm btn-primary text-light">Reservar</a>
-  </div>
-  {% endif %}
+  {% endfor %}
+
   <hr/>
   </div> 
-  {% endfor %}
   </div>
 
 {% endblock %}

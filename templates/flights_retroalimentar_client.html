@@ -1,0 +1,39 @@
+{% extends "layout_client.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block menu %}
+  {{ super() }}
+{% endblock %}
+{% block navbar_menu %}{% endblock %}
+{% block content %}
+<h5 class="card-title"><b>Añadir retroalimentación</b></h5>
+<form class="" method="POST" action="{{ url_for('client_flights_retroalimentar', vuelo_id=vuelo_id) }}" autocomplete="off" novalidate>
+  {{form.csrf_token }}
+  <div class="form-group">
+     {{form.puntuacion.label}} 
+     {{form.puntuacion}} 
+    </div>
+    <ul>
+{%for error in form.puntuacion.errors %}
+    <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+<div class="form-group">
+  {{form.comentario.label}} 
+  {{form.comentario(cols="50", rows="20")}} 
+ </div>
+ <ul>
+{%for error in form.comentario.errors %}
+ <li style="color:red"> {{error}} </li>
+{%endfor %}
+</ul>
+
+<button type="submit" class="btn btn-lg btn-primary text-light">Enviar</button>
+<a href="{{ url_for('client_flights_list') }}" class="btn btn-lg btn-primary text-light">Cancelar</a>
+</form>
+{% endblock %}
+{% block footer %}
+  {{ super() }}
+{% endblock %}

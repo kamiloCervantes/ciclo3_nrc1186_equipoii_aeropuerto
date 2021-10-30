@@ -9,8 +9,11 @@ from flask.helpers import url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, DateField, DateTimeField
 from wtforms.validators import AnyOf, InputRequired, Length, Email, EqualTo, NumberRange
+from wtforms.widgets import TextArea
 import sqlite3
 import hashlib
+import random
+import string
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "gva\"Yf124.pi'iFb@j6Pn^:FpA*m`)"
@@ -164,15 +167,76 @@ def flights_list():
 def client_flights_list():
     con = connection()
     cur = con.cursor()
-    flights_statement = "SELECT vuelos.codigo_vuelo, persona_piloto.nombres, persona_piloto.apellidos, vuelos.capacidad, rutas.nombre_ruta, destino_salida.sigla_aeropuerto, destino_salida.nombre_aeropuerto, municipio_salida.nombre, departamento_salida.nombre, destino_llegada.sigla_aeropuerto, destino_llegada.nombre_aeropuerto, municipio_llegada.nombre, departamento_llegada.nombre, estados_vuelo.estado_vuelo, aeronaves.codigo_aeronave, vuelos.fecha_vuelo from vuelos inner join pilotos on pilotos.id = vuelos.pilotos_id inner join personas as persona_piloto on persona_piloto.id = pilotos.personas_id inner join rutas on rutas.id = vuelos.rutas_id inner join destinos as destino_salida on destino_salida.id = rutas.destino_salida_id inner join municipios as municipio_salida on municipio_salida.id = destino_salida.municipios_id inner join departamentos as departamento_salida on departamento_salida.id = municipio_salida.departamentos_id inner join destinos as destino_llegada on destino_llegada.id = rutas.destino_llegada_id inner join municipios as municipio_llegada on municipio_llegada.id = destino_llegada.municipios_id inner join departamentos as departamento_llegada on departamento_llegada.id = municipio_llegada.departamentos_id inner join estados_vuelo on estados_vuelo.id = vuelos.estados_vuelo_id inner join aeronaves on aeronaves.id = vuelos.aeronaves_id"
-    cur.execute(flights_statement)
+    flights_statement = "SELECT vuelos.codigo_vuelo, persona_piloto.nombres, persona_piloto.apellidos, vuelos.capacidad, rutas.nombre_ruta, destino_salida.sigla_aeropuerto, destino_salida.nombre_aeropuerto, municipio_salida.nombre, departamento_salida.nombre, destino_llegada.sigla_aeropuerto, destino_llegada.nombre_aeropuerto, municipio_llegada.nombre, departamento_llegada.nombre, estados_vuelo.estado_vuelo, aeronaves.codigo_aeronave, vuelos.fecha_vuelo, reservas.id, vuelos.id from vuelos inner join pilotos on pilotos.id = vuelos.pilotos_id inner join personas as persona_piloto on persona_piloto.id = pilotos.personas_id inner join rutas on rutas.id = vuelos.rutas_id inner join destinos as destino_salida on destino_salida.id = rutas.destino_salida_id inner join municipios as municipio_salida on municipio_salida.id = destino_salida.municipios_id inner join departamentos as departamento_salida on departamento_salida.id = municipio_salida.departamentos_id inner join destinos as destino_llegada on destino_llegada.id = rutas.destino_llegada_id inner join municipios as municipio_llegada on municipio_llegada.id = destino_llegada.municipios_id inner join departamentos as departamento_llegada on departamento_llegada.id = municipio_llegada.departamentos_id inner join estados_vuelo on estados_vuelo.id = vuelos.estados_vuelo_id inner join aeronaves on aeronaves.id = vuelos.aeronaves_id left join reservas on vuelos.id = reservas.vuelos_id and reservas.persona_pasajero_id = ?"
+    cur.execute(flights_statement, [session['user_id']])
     flights = cur.fetchall()
-    print(flights)
+    
     return render_template('flights_list_client.html', flights=flights)
 
-@app.route("/client/flights/reservar", methods=['GET'])
-def client_flights_reservacion():
+def get_random_string(length):
+    letters = string.ascii_uppercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
+
+@app.route("/client/flights/reservar/<vuelo_id>", methods=['GET'])
+def client_flights_reservacion(vuelo_id):
+    try:
+        con = connection()
+        cur = con.cursor()
+        random_code = get_random_string(6)
+        print(random_code)
+        print(session['user_id'])
+        personas_statement = "select personas.id from usuarios inner join personas on personas.id = usuarios.personas_id where usuarios.id = ?"
+        cur.execute(personas_statement, [session['user_id']])
+        persona = cur.fetchone()
+        print(persona[0])
+        
+
+        vuelos_statement = "INSERT INTO reservas (codigo_reserva,vuelos_id,persona_pasajero_id) VALUES (?,?,?);"
+        cur.execute(vuelos_statement, [random_code, vuelo_id, persona[0]])
+    except:
+        return redirect(url_for('client_flights_list', error_message="No se pudo guardar el registro en la BD"))
+    else:
+        con.commit()
+        cur.close()
     return render_template('flights_reserva_client.html')
+
+class flights_retroalimentar_form(FlaskForm):
+    comentario = StringField(u'Comentario', widget=TextArea(), validators=[InputRequired(message='Elcomentario es requerido'), Length(min=5, max=255, message='El comentario debe tener entre 5 y 255 caracteres')])
+    puntuacion = SelectField(u'Puntuacion',   choices=[('5', 'Excelente'), ('4', 'Bueno'), ('3', 'Aceptable'), ('2', 'Regular'), ('1', 'Malo')], validate_choice=False)
+
+
+
+@app.route("/client/flights/retroalimentar/<vuelo_id>", methods=['GET','POST'])
+def client_flights_retroalimentar(vuelo_id):
+    con = connection()
+    cur = con.cursor()
+    form = flights_retroalimentar_form()   
+    if form.validate_on_submit():
+        try:
+            vuelos_statement = "INSERT INTO retroalimentacion (comentario,puntuacion,vuelos_id,personas_id) VALUES (?,?,?,?);"
+            cur.execute(vuelos_statement, [form.comentario.data, form.puntuacion.data, vuelo_id, session['user_id']])
+            
+        except:
+            return redirect(url_for('client_flights_list', error_message="No se pudo guardar el registro en la BD"))
+        else:
+            con.commit()
+            cur.close()
+            return redirect(url_for('client_flights_list'))
+    return render_template('flights_retroalimentar_client.html', form=form, vuelo_id=vuelo_id)
+
+@app.route("/client/reservas/detalle/<reserva_id>", methods=['GET'])
+def client_reservas_detalle(reserva_id):    
+    con = connection()
+    cur = con.cursor()
+    reserva_statement = "SELECT vuelos.codigo_vuelo, persona_piloto.nombres, persona_piloto.apellidos, vuelos.capacidad, rutas.nombre_ruta, destino_salida.sigla_aeropuerto, destino_salida.nombre_aeropuerto, municipio_salida.nombre, departamento_salida.nombre, destino_llegada.sigla_aeropuerto, destino_llegada.nombre_aeropuerto, municipio_llegada.nombre, departamento_llegada.nombre, estados_vuelo.estado_vuelo, aeronaves.codigo_aeronave, vuelos.fecha_vuelo, reservas.id, vuelos.id, reservas.codigo_reserva, persona_pasajero.*, vuelos.id from vuelos inner join pilotos on pilotos.id = vuelos.pilotos_id inner join personas as persona_piloto on persona_piloto.id = pilotos.personas_id inner join rutas on rutas.id = vuelos.rutas_id inner join destinos as destino_salida on destino_salida.id = rutas.destino_salida_id inner join municipios as municipio_salida on municipio_salida.id = destino_salida.municipios_id inner join departamentos as departamento_salida on departamento_salida.id = municipio_salida.departamentos_id inner join destinos as destino_llegada on destino_llegada.id = rutas.destino_llegada_id inner join municipios as municipio_llegada on municipio_llegada.id = destino_llegada.municipios_id inner join departamentos as departamento_llegada on departamento_llegada.id = municipio_llegada.departamentos_id inner join estados_vuelo on estados_vuelo.id = vuelos.estados_vuelo_id inner join aeronaves on aeronaves.id = vuelos.aeronaves_id left join reservas on vuelos.id = reservas.vuelos_id and reservas.id = ? left join personas as persona_pasajero on persona_pasajero.id = reservas.persona_pasajero_id"
+    cur.execute(reserva_statement, [reserva_id])
+    reserva = cur.fetchone()
+    retroalimentacion_statement = "SELECT * from retroalimentacion inner join personas on personas.id = retroalimentacion.personas_id where retroalimentacion.vuelos_id = ?"
+    cur.execute(retroalimentacion_statement, [reserva[26]])
+    retroalimentacion_list = cur.fetchall()
+    cur.close()
+    return render_template('reservas_detalle_client.html', flight=reserva, retroalimentaciones=retroalimentacion_list)
 
 class planes_add_form(FlaskForm):
     codigoaeronave = StringField(u'Código de aeronave', validators=[InputRequired(message='El código de aeronave es requerido'), Length(min=5, max=50, message='El código de aeronave debe tener entre 5 y 50 caracteres')])
